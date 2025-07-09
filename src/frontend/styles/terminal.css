@@ -1,0 +1,286 @@
+/* Terminal Container Styles */
+
+.terminal-container {
+  width: 100vw;
+  height: 100vh;
+  background: var(--matrix-bg);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--matrix-font);
+}
+
+.terminal-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: var(--matrix-padding);
+}
+
+/* Terminal Header */
+.terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--matrix-dim);
+  margin-bottom: 15px;
+}
+
+.terminal-title {
+  color: var(--matrix-primary);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.terminal-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--matrix-secondary);
+}
+
+/* Terminal Output Area */
+.terminal-output {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--matrix-dim) transparent;
+}
+
+.terminal-output::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminal-output::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+  background: var(--matrix-dim);
+  border-radius: 3px;
+}
+
+.terminal-output::-webkit-scrollbar-thumb:hover {
+  background: var(--matrix-secondary);
+}
+
+/* Terminal Lines */
+.terminal-line {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 2px;
+  min-height: calc(var(--matrix-font-size) * var(--matrix-line-height));
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.terminal-line.output {
+  color: var(--matrix-primary);
+}
+
+.terminal-line.input {
+  color: var(--matrix-primary);
+}
+
+.terminal-line.prompt {
+  color: var(--matrix-secondary);
+  font-weight: 500;
+}
+
+.terminal-line.system {
+  color: var(--matrix-dim);
+  font-style: italic;
+}
+
+.line-prefix {
+  margin-right: 8px;
+  min-width: 20px;
+  color: var(--matrix-secondary);
+}
+
+.line-content {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* Terminal Input Area */
+.terminal-input-area {
+  display: flex;
+  align-items: center;
+  padding: 15px 0 10px 0;
+  border-top: 1px solid var(--matrix-dim);
+  margin-top: 15px;
+}
+
+.terminal-prompt {
+  color: var(--matrix-secondary);
+  margin-right: 8px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--matrix-primary);
+  font-family: var(--matrix-font);
+  font-size: var(--matrix-font-size);
+  line-height: var(--matrix-line-height);
+  caret-color: var(--matrix-cursor);
+}
+
+.terminal-input::placeholder {
+  color: var(--matrix-dim);
+  opacity: 0.7;
+}
+
+.terminal-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading Indicator */
+.terminal-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--matrix-secondary);
+  font-style: italic;
+}
+
+.loading-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.loading-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--matrix-secondary);
+  animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loading-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Welcome Screen */
+.terminal-welcome {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--matrix-primary);
+}
+
+.welcome-logo {
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px var(--matrix-shadow);
+}
+
+.welcome-message {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  color: var(--matrix-secondary);
+}
+
+/* Error States */
+.terminal-error {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+  padding: 8px 12px;
+  border-radius: var(--matrix-border-radius);
+  border-left: 3px solid #ff4444;
+  margin: 5px 0;
+}
+
+.terminal-warning {
+  color: #ffaa00;
+  background: rgba(255, 170, 0, 0.1);
+  padding: 8px 12px;
+  border-radius: var(--matrix-border-radius);
+  border-left: 3px solid #ffaa00;
+  margin: 5px 0;
+}
+
+/* Command History */
+.command-history {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--matrix-dim);
+  border-radius: var(--matrix-border-radius);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.history-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--matrix-secondary);
+  transition: background 0.2s ease;
+}
+
+.history-item:hover,
+.history-item.selected {
+  background: rgba(0, 255, 65, 0.1);
+  color: var(--matrix-primary);
+}
+
+/* Matrix Background Effect */
+.matrix-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+.matrix-char {
+  position: absolute;
+  color: var(--matrix-primary);
+  font-size: 12px;
+  font-family: var(--matrix-font);
+  animation: matrix-fall var(--fall-duration, 5s) linear infinite;
+}
+
+@keyframes matrix-fall {
+  from {
+    transform: translateY(-50px);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(calc(100vh + 50px));
+    opacity: 0;
+  }
+}

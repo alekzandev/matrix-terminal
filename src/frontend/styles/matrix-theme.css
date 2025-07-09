@@ -1,0 +1,132 @@
+/* Matrix Terminal Theme - Core Variables */
+:root {
+  --matrix-bg: #000000;
+  --matrix-primary: #00ff41;
+  --matrix-secondary: #008f11;
+  --matrix-dim: #003300;
+  --matrix-cursor: #00ff41;
+  --matrix-shadow: rgba(0, 255, 65, 0.3);
+  
+  /* Typography */
+  --matrix-font: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+  --matrix-font-size: 14px;
+  --matrix-line-height: 1.4;
+  
+  /* Animations */
+  --matrix-cursor-blink: 1s;
+  --matrix-typing-speed: 50ms;
+  --matrix-flicker-duration: 0.15s;
+  --matrix-scanline-speed: 2s;
+  
+  /* Spacing */
+  --matrix-padding: 20px;
+  --matrix-border-radius: 4px;
+}
+
+/* Global Matrix Styles */
+* {
+  box-sizing: border-box;
+}
+
+.matrix-text {
+  color: var(--matrix-primary);
+  font-family: var(--matrix-font);
+  font-size: var(--matrix-font-size);
+  line-height: var(--matrix-line-height);
+  text-shadow: 0 0 5px var(--matrix-shadow);
+}
+
+.matrix-glow {
+  box-shadow: 
+    0 0 5px var(--matrix-primary),
+    0 0 10px var(--matrix-primary),
+    0 0 15px var(--matrix-primary);
+}
+
+/* Scanline Effect */
+@keyframes scanlines {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.matrix-scanlines::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--matrix-primary),
+    transparent
+  );
+  animation: scanlines var(--matrix-scanline-speed) linear infinite;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Flicker Animation */
+@keyframes flicker {
+  0%, 98% { opacity: 1; }
+  99% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.matrix-flicker {
+  animation: flicker var(--matrix-flicker-duration) ease-in-out infinite;
+}
+
+/* Typing Animation */
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.matrix-typing {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--matrix-cursor);
+  animation: 
+    typing calc(var(--matrix-typing-speed) * var(--char-count)) steps(var(--char-count)),
+    blink var(--matrix-cursor-blink) step-end infinite;
+}
+
+/* Cursor Blink */
+@keyframes blink {
+  0%, 50% { border-color: var(--matrix-cursor); }
+  51%, 100% { border-color: transparent; }
+}
+
+/* Terminal Specific Styles */
+.terminal-prompt {
+  color: var(--matrix-secondary);
+}
+
+.terminal-input {
+  color: var(--matrix-primary);
+}
+
+.terminal-output {
+  color: var(--matrix-primary);
+}
+
+.terminal-system {
+  color: var(--matrix-dim);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  :root {
+    --matrix-font-size: 12px;
+    --matrix-padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --matrix-font-size: 11px;
+    --matrix-padding: 10px;
+  }
+}

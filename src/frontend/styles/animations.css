@@ -1,0 +1,180 @@
+/* Terminal Animation Effects */
+
+/* Character-by-character typing effect */
+@keyframes typewriter {
+  from { 
+    width: 0; 
+  }
+  to { 
+    width: 100%; 
+  }
+}
+
+.typewriter-effect {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typewriter var(--typing-duration, 2s) steps(var(--char-count, 20)) forwards;
+}
+
+/* Cursor animations */
+@keyframes cursor-blink {
+  0%, 50% { 
+    opacity: 1; 
+  }
+  51%, 100% { 
+    opacity: 0; 
+  }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  background-color: var(--matrix-cursor);
+  animation: cursor-blink var(--matrix-cursor-blink) infinite;
+  margin-left: 2px;
+}
+
+.terminal-cursor.typing {
+  animation: none;
+  opacity: 1;
+}
+
+/* Line appearance animation */
+@keyframes line-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.line-appear {
+  animation: line-appear 0.3s ease-out forwards;
+}
+
+/* Matrix rain effect (background) */
+@keyframes matrix-rain {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.matrix-rain-char {
+  position: absolute;
+  color: var(--matrix-dim);
+  font-size: 12px;
+  animation: matrix-rain var(--rain-duration, 3s) linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Screen flicker effect */
+@keyframes screen-flicker {
+  0%, 98%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  99% {
+    opacity: 0.95;
+    filter: brightness(1.1) contrast(1.1);
+  }
+}
+
+.screen-flicker {
+  animation: screen-flicker 0.1s ease-in-out infinite;
+}
+
+/* Text glow pulse */
+@keyframes text-glow-pulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 5px var(--matrix-shadow),
+      0 0 10px var(--matrix-shadow);
+  }
+  50% {
+    text-shadow: 
+      0 0 10px var(--matrix-shadow),
+      0 0 20px var(--matrix-shadow),
+      0 0 30px var(--matrix-shadow);
+  }
+}
+
+.text-glow-pulse {
+  animation: text-glow-pulse 2s ease-in-out infinite;
+}
+
+/* Input focus effect */
+.terminal-input-focused {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 65, 0.1),
+    transparent
+  );
+  border-radius: 2px;
+}
+
+/* Boot sequence animation */
+@keyframes boot-sequence {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.boot-animation {
+  animation: boot-sequence 1s ease-out forwards;
+}
+
+/* Connection status indicators */
+.connection-indicator {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.connection-indicator.connected {
+  background-color: var(--matrix-primary);
+  box-shadow: 0 0 5px var(--matrix-primary);
+}
+
+.connection-indicator.disconnected {
+  background-color: #ff4444;
+  box-shadow: 0 0 5px #ff4444;
+}
+
+.connection-indicator.connecting {
+  background-color: #ffaa00;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
