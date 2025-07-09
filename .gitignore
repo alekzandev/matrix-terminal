@@ -1,0 +1,33 @@
+**/.copilot/**
+
+**/.vscode/**
+**/.idea/**
+**/.DS_Store**
+
+# Binaries
+**/bin/**
+**/dist/**
+**/build/**
+**/target/**
+**/out/**
+
+# Logs
+**/logs/**
+**/log/**
+**/tmp/**
+
+# Coverage
+**/coverage/**
+**/lcov/**
+**/test-results/**
+
+# Dependency directories
+**/node_modules/**
+**/vendor/**
+**/bower_components/**
+**/jspm_packages/**
+
+# Configuration files
+**/config/**
+**/settings/**
+**/secrets/**
