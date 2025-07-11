@@ -203,7 +203,8 @@ export class MatrixTerminal extends LitElement {
     // Add boot messages
     this.addBootMessages();
     
-    await this.delay(2000);
+    // Wait for boot messages to complete (5 messages * 400ms each + extra time)
+    await this.delay(2500);
     
     // Hide welcome screen and show terminal
     this.showWelcome = false;
@@ -211,26 +212,24 @@ export class MatrixTerminal extends LitElement {
     
     // Add initial greeting
     this.addSystemMessage('System initialized. Connection established.');
-    this.addSystemMessage('Matrix Terminal v1.0.0 - Ready for interaction.');
+    await this.delay(200);
+    this.addSystemMessage('Delfos Terminal v9.3.96 - Ready for interaction.');
     
-    await this.delay(500);
+    await this.delay(800);
     
-    // Add initial prompt
-    this.addPromptMessage('Welcome to the ConvAnalytics Matrix Terminal.');
+    // Add initial prompt messages with delays between them
+    this.addPromptMessage('Bienvenido al Perfilador Analítico de Delfos.');
     this.addPromptMessage('What would you like to explore today?');
     this.addPromptMessage('> [1] Data Analysis  [2] System Info  [3] Help  [4] Custom Query');
-    
-    this.requestUpdate();
   }
 
   private addBootMessages(): void {
     const bootMessages = [
-      'Initializing Matrix Protocol...',
+      'Initializing Data Mesh Protocol...',
       'Loading neural pathways...',
       'Establishing quantum entanglement...',
       'Calibrating reality matrix...',
-      'Connection secured.',
-      'Welcome to the Matrix.'
+      'Connection secured.'
     ];
 
     bootMessages.forEach((message, index) => {
