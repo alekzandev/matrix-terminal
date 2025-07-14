@@ -108,6 +108,17 @@ export class MatrixTerminal extends LitElement {
       99% { opacity: 0.95; }
       100% { opacity: 1; }
     }
+    
+    @keyframes matrix-fall {
+      0% {
+        transform: translateY(-100%);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+    }
 
     .welcome-screen {
       flex: 1;
@@ -160,7 +171,21 @@ export class MatrixTerminal extends LitElement {
       bottom: 0;
       overflow: hidden;
       z-index: -1;
-      opacity: 0.1;
+      opacity: 0.6;
+    }
+
+    .countdown-timer {
+      font-size: 12px;
+      color: #00ff41;
+      text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+    }
+
+    .countdown-timer.blink {
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
     }
   `;
 
@@ -182,12 +207,22 @@ export class MatrixTerminal extends LitElement {
   @state()
   private bootSequence = false;
 
+  @state()
+  private countdownTime: number = 30; // 5 minutes in seconds
+
+  @state()
+  private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
+
+  @state()
+  private timeOver: boolean = false;
+
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
     this.initializeTerminal();
     this.startMatrixBackground();
+    this.startCountdown();
   }
 
   private generateSessionId(): string {
@@ -204,7 +239,7 @@ export class MatrixTerminal extends LitElement {
     this.addBootMessages();
     
     // Wait for boot messages to complete (5 messages * 400ms each + extra time)
-    await this.delay(2500);
+    await this.delay(6000);
     
     // Hide welcome screen and show terminal
     this.showWelcome = false;
@@ -212,30 +247,30 @@ export class MatrixTerminal extends LitElement {
     
     // Add initial greeting
     this.addSystemMessage('System initialized. Connection established.');
-    await this.delay(200);
     this.addSystemMessage('Delfos Terminal v9.3.96 - Ready for interaction.');
     
-    await this.delay(800);
+    await this.delay(2000);
+    this.startMatrixBackground();
     
     // Add initial prompt messages with delays between them
-    this.addPromptMessage('Bienvenido al Perfilador Analítico de Delfos.');
-    this.addPromptMessage('What would you like to explore today?');
-    this.addPromptMessage('> [1] Data Analysis  [2] System Info  [3] Help  [4] Custom Query');
+    this.addPromptMessage('Bienvenido al Perfilador Analítico de Delfos.', false);
+    this.addPromptMessage('What would you like to explore today?', false);
+    this.addPromptMessage('> [1] Data Analysis  [2] System Info  [3] Help  [4] Custom Query', false);
   }
 
   private addBootMessages(): void {
     const bootMessages = [
       'Initializing Data Mesh Protocol...',
-      'Loading neural pathways...',
-      'Establishing quantum entanglement...',
-      'Calibrating reality matrix...',
+      'Loading neural pathways from GenAI Account...',
+      'Establishing quantum entanglement by Expody...',
+      'Calibrating reality matrix through Bifröst...',
       'Connection secured.'
     ];
 
     bootMessages.forEach((message, index) => {
       setTimeout(() => {
         this.addSystemMessage(message);
-      }, index * 300);
+      }, index * 1000);
     });
   }
 
@@ -251,17 +286,23 @@ export class MatrixTerminal extends LitElement {
     this.requestUpdate();
   }
 
-  private addPromptMessage(content: string): void {
+  private addPromptMessage(content: string, typing: boolean = true): void {
     const line: TerminalLine = {
       id: this.generateLineId(),
       content,
       type: 'prompt',
       timestamp: Date.now(),
-      isTyping: true
+      isTyping: typing
     };
-    
-    this.terminalState.lines.push(line);
-    this.requestUpdate();
+    if (typing) {
+      this.terminalState.lines.push(line);
+      this.requestUpdate();
+    }
+    // show prompt message immediately without wait for user typing
+    else{
+      this.terminalState.lines.push(line);
+      this.requestUpdate();
+    }
     
     // Simulate typing effect
     setTimeout(() => {
@@ -377,14 +418,51 @@ export class MatrixTerminal extends LitElement {
 
       setTimeout(() => {
         char.remove();
-      }, 7000);
+      }, 70000);
     };
 
     // Create periodic matrix chars
-    setInterval(createMatrixChar, 150);
+    setInterval(createMatrixChar, 450);
+  }
+
+  private startCountdown(): void {
+    const timerInterval = setInterval(() => {
+      if (this.countdownTime > 0) {
+        this.countdownTime -= 1;
+        this.requestUpdate();
+      } else {
+        clearInterval(timerInterval);
+        this.timeOver = true;
+        this.requestUpdate();
+      }
+    }, 1000);
+  }
+
+  private formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 
   render() {
+    const isTimeCritical = this.countdownTime <= 0.2 * this.totalCountdownTime; // 20% of total time
+
+    if (this.timeOver) {
+      return html`
+        <div class="terminal-container screen-flicker">
+          <div class="scanlines"></div>
+          <div class="matrix-background"></div>
+          
+          <div class="welcome-screen">
+            <div class="welcome-logo">⨂ TIME OVER</div>
+            <div class="welcome-message">
+              Tu tiempo ha expirado, intenta nuevamente
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     if (this.showWelcome) {
       return html`
         <div class="terminal-container screen-flicker">
@@ -392,15 +470,15 @@ export class MatrixTerminal extends LitElement {
           <div class="matrix-background"></div>
           
           <div class="welcome-screen">
-            <div class="welcome-logo">◉ CONVANALYTICS</div>
+            <div class="welcome-logo">◉ DELFOS ANALYTICS PROFILER</div>
             <div class="welcome-message">
-              Matrix-Style Interactive Terminal<br>
+              Interactive questionary<br>
               Establishing secure connection...
             </div>
             
             ${this.bootSequence ? html`
               <div class="boot-sequence">
-                <div>Initializing Matrix Protocol...</div>
+                <div>Initializing Data Mesh Protocol...</div>
               </div>
             ` : ''}
           </div>
@@ -414,12 +492,14 @@ export class MatrixTerminal extends LitElement {
         <div class="matrix-background"></div>
         
         <div class="terminal-header">
-          <div class="terminal-title">◉ ConvAnalytics Matrix Terminal</div>
+          <div class="terminal-title">◉ DELFOS ANALYTICS PROFILER</div>
           <div class="terminal-status">
             <div class="connection-indicator ${this.terminalState.connected ? 'connected' : 'disconnected'}"></div>
             <span>${this.terminalState.connected ? 'CONNECTED' : 'DISCONNECTED'}</span>
             <span>|</span>
             <span>Session: ${this.terminalState.sessionId}</span>
+            <span>|</span>
+            <span class="countdown-timer ${isTimeCritical ? 'blink' : ''}" style="color: ${isTimeCritical ? 'red' : '#00ff41'};">Countdown: ${this.formatTime(this.countdownTime)}</span>
           </div>
         </div>
 

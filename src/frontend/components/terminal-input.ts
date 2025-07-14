@@ -130,12 +130,12 @@ export class TerminalInput extends LitElement {
       
       case 'ArrowUp':
         event.preventDefault();
-        this.navigateHistory(-1);
+        this.navigateHistory(1);
         break;
       
       case 'ArrowDown':
         event.preventDefault();
-        this.navigateHistory(1);
+        this.navigateHistory(-1);
         break;
       
       case 'Tab':
@@ -260,7 +260,7 @@ export class TerminalInput extends LitElement {
 
     return html`
       <div class="terminal-input-area" style="position: relative;">
-        <div class="terminal-prompt">matrix:~$</div>
+        <div class="terminal-prompt">dataCrack:~$</div>
         <input
           class="terminal-input"
           type="text"
