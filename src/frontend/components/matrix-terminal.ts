@@ -35,6 +35,7 @@ export class MatrixTerminal extends LitElement {
       padding: 10px 0;
       border-bottom: 1px solid #003300;
       margin-bottom: 15px;
+      position: relative;
     }
 
     .terminal-title {
@@ -175,9 +176,18 @@ export class MatrixTerminal extends LitElement {
     }
 
     .countdown-timer {
-      font-size: 12px;
+      font-size: 24px; /* Increased font size */
       color: #00ff41;
       text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .countdown-timer.critical {
+      color: #ff4444; /* Red color for critical time */
+      text-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
     }
 
     .countdown-timer.blink {
@@ -208,7 +218,7 @@ export class MatrixTerminal extends LitElement {
   private bootSequence = false;
 
   @state()
-  private countdownTime: number = 30; // 5 minutes in seconds
+  private countdownTime: number = 300; // 5 minutes in seconds
 
   @state()
   private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
@@ -444,6 +454,20 @@ export class MatrixTerminal extends LitElement {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 
+  private renderCountdownTimer(): import("lit").TemplateResult {
+    const minutes = Math.floor(this.countdownTime / 60);
+    const seconds = this.countdownTime % 60;
+    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    const isCritical = this.countdownTime <= this.totalCountdownTime * 0.2;
+
+    return html`
+      <div class="countdown-timer ${isCritical ? 'critical blink' : ''}">
+        ${formattedTime}
+      </div>
+    `;
+  }
+
   render() {
     const isTimeCritical = this.countdownTime <= 0.2 * this.totalCountdownTime; // 20% of total time
 
@@ -498,9 +522,8 @@ export class MatrixTerminal extends LitElement {
             <span>${this.terminalState.connected ? 'CONNECTED' : 'DISCONNECTED'}</span>
             <span>|</span>
             <span>Session: ${this.terminalState.sessionId}</span>
-            <span>|</span>
-            <span class="countdown-timer ${isTimeCritical ? 'blink' : ''}" style="color: ${isTimeCritical ? 'red' : '#00ff41'};">Countdown: ${this.formatTime(this.countdownTime)}</span>
           </div>
+          ${this.renderCountdownTimer()}
         </div>
 
         <div class="terminal-content">
