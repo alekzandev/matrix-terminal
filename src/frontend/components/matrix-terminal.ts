@@ -131,6 +131,16 @@ export class MatrixTerminal extends LitElement {
       color: #00ff41;
     }
 
+    .timeout-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #ff4444;
+    }
+
     .welcome-logo {
       font-size: 32px;
       font-weight: 500;
@@ -138,10 +148,23 @@ export class MatrixTerminal extends LitElement {
       text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
       animation: logo-glow 3s ease-in-out infinite;
     }
+    
+    .timeout-logo {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+      animation: logo-glow-timeout 3s ease-in-out infinite;
+    }
 
     @keyframes logo-glow {
       0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
       50% { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8), 0 0 30px rgba(0, 255, 65, 0.3); }
+    }
+    
+    @keyframes logo-glow-timeout {
+      0%, 100% { text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
+      50% { text-shadow: 0 0 20px rgba(255, 68, 68, 0.8), 0 0 30px rgba(255, 68, 68, 0.3); }
     }
 
     .welcome-message {
@@ -150,6 +173,14 @@ export class MatrixTerminal extends LitElement {
       max-width: 600px;
       color: #008f11;
       margin-bottom: 30px;
+    }
+    .rule-message {
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 600px;
+      color: #ece7f5;
+      margin-bottom: 30px;
+      text-align: left;
     }
 
     .press-enter {
@@ -239,7 +270,7 @@ export class MatrixTerminal extends LitElement {
   private bootSequence = false;
 
   @state()
-  private countdownTime: number = 300; // 5 minutes in seconds
+  private countdownTime: number = 10; // 5 minutes in seconds
 
   @state()
   private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
@@ -499,7 +530,7 @@ export class MatrixTerminal extends LitElement {
     const seconds = this.countdownTime % 60;
     const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-    const isCritical = this.countdownTime <= this.totalCountdownTime * 0.2;
+    const isCritical = this.countdownTime < this.totalCountdownTime * 0.2;
 
     return html`
       <div class="countdown-timer ${isCritical ? 'critical blink' : ''}">
@@ -509,7 +540,7 @@ export class MatrixTerminal extends LitElement {
   }
 
   render() {
-    const isTimeCritical = this.countdownTime <= 0.2 * this.totalCountdownTime; // 20% of total time
+    const isTimeCritical = this.countdownTime < 0.2 * this.totalCountdownTime; // 20% of total time
 
     if (this.timeOver) {
       return html`
@@ -517,10 +548,13 @@ export class MatrixTerminal extends LitElement {
           <div class="scanlines"></div>
           <div class="matrix-background"></div>
           
-          <div class="welcome-screen">
-            <div class="welcome-logo">⨂ TIME OVER</div>
+          <div class="timeout-screen">
+            <div class="timeout-logo">⏳ ¡Ufff! Se te acabó el tiempo…</div>
             <div class="welcome-message">
-              Tu tiempo ha expirado, intenta nuevamente
+              Esta vez no alcanzaste a completar el reto, pero tranqui que así es como se entrena un/a crack 💪
+            </div>
+            <div class="welcome-message">
+              ¡A la próxima se rompe!
             </div>
           </div>
         </div>
@@ -534,10 +568,29 @@ export class MatrixTerminal extends LitElement {
           <div class="matrix-background"></div>
           
           <div class="welcome-screen">
-            <div class="welcome-logo">◉ DELFOS ANALYTICS PROFILER</div>
+            <div class="welcome-logo">🔮 DELFOS ANALYTICS PROFILER</div>
+            <div>
+              ¡Bienvenid@ crack de los datos!
+            </div>
             <div class="welcome-message">
-              Interactive questionary<br>
-              Establishing secure connection...
+              Aquí arranca tu misión como investigador/a, donde vas a poner a prueba toda tu malicia, criterio y flow analítico 🧠✨.<br>
+            </div>
+            <div>
+              Reto
+            </div>
+            <div class="welcome-message">
+              Responder unas preguntas de acuerdo a tu rol... ¡y todo contrarreloj!<br>
+              Prepárate pa' soltar la data con estilo<br><br>
+            </div>
+            <div>
+              Pilas con estas reglas que no perdonan:<br><br>
+            </div>
+            <div class="rule-message">
+              a. Tienes 5 minuticos pa' resolver todo el reto.<br>
+              b. Te van a salir 8 preguntas del tema que te tocó, según tu perfil de investigador.<br>
+              c. Necesitás mínimo un 80% de respuestas correctas pa' pasar el reto.<br>
+              d. Vas a tener a la mano un tablero en Quicksight con los datos para analizar.<br><br>
+              Ojo: Si tu rol es de crédito, mírese bien el tablero de crédito. No mezcle los fríjoles.
             </div>
             ${this.showPressEnter ? html`
               <div class="press-enter">
