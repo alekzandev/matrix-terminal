@@ -247,6 +247,9 @@ export class MatrixTerminal extends LitElement {
   @state()
   private timeOver: boolean = false;
 
+  @state()
+  private showPressEnter: boolean = true;
+
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -258,6 +261,7 @@ export class MatrixTerminal extends LitElement {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         window.removeEventListener('keydown', handleKeyPress);
+        this.showPressEnter = false; // Hide 'Press Enter to continue'
         this.startTerminal();
       }
     };
@@ -535,9 +539,11 @@ export class MatrixTerminal extends LitElement {
               Interactive questionary<br>
               Establishing secure connection...
             </div>
-            <div class="press-enter">
-              Press Enter to continue<span class="cursor"></span>
-            </div>
+            ${this.showPressEnter ? html`
+              <div class="press-enter">
+                Press Enter to continue<span class="cursor"></span>
+              </div>
+            ` : ''}
             ${this.bootSequence ? html`
               <div class="boot-sequence">
                 <div>Initializing Data Mesh Protocol...</div>
