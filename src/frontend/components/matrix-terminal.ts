@@ -174,7 +174,7 @@ export class MatrixTerminal extends LitElement {
     }
 
     .boot-sequence {
-      color: #f0f8f2ff;
+      color: #9da9a0ff;
       font-size: 12px;
       text-align: left;
       opacity: 0;
