@@ -152,12 +152,33 @@ export class MatrixTerminal extends LitElement {
       margin-bottom: 30px;
     }
 
-    .boot-sequence {
+    .press-enter {
+      font-size: 16px;
       color: #00ff41;
+      text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cursor {
+      width: 10px;
+      height: 20px;
+      background-color: #00ff41;
+      margin-left: 5px;
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .boot-sequence {
+      color: #f0f8f2ff;
       font-size: 12px;
       text-align: left;
       opacity: 0;
-      animation: boot-appear 0.5s ease-out forwards;
+      animation: boot-appear 2s ease-out forwards;
     }
 
     @keyframes boot-appear {
@@ -230,6 +251,21 @@ export class MatrixTerminal extends LitElement {
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
+    this.initializeWelcomeScreen();
+  }
+
+  private initializeWelcomeScreen(): void {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        window.removeEventListener('keydown', handleKeyPress);
+        this.startTerminal();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+  }
+
+  private startTerminal(): void {
     this.initializeTerminal();
     this.startMatrixBackground();
     this.startCountdown();
@@ -499,7 +535,9 @@ export class MatrixTerminal extends LitElement {
               Interactive questionary<br>
               Establishing secure connection...
             </div>
-            
+            <div class="press-enter">
+              Press Enter to continue<span class="cursor"></span>
+            </div>
             ${this.bootSequence ? html`
               <div class="boot-sequence">
                 <div>Initializing Data Mesh Protocol...</div>
