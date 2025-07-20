@@ -270,7 +270,7 @@ export class MatrixTerminal extends LitElement {
   private bootSequence = false;
 
   @state()
-  private countdownTime: number = 10; // 5 minutes in seconds
+  private countdownTime: number = 62; // 5 minutes in seconds
 
   @state()
   private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
@@ -314,13 +314,11 @@ export class MatrixTerminal extends LitElement {
     // Simulate boot sequence
     this.bootSequence = true;
     
-    await this.delay(1000);
-    
     // Add boot messages
     this.addBootMessages();
     
     // Wait for boot messages to complete (5 messages * 400ms each + extra time)
-    await this.delay(6000);
+    await this.delay(2000);
     
     // Hide welcome screen and show terminal
     this.showWelcome = false;
@@ -329,19 +327,18 @@ export class MatrixTerminal extends LitElement {
     // Add initial greeting
     this.addSystemMessage('System initialized. Connection established.');
     this.addSystemMessage('Delfos Terminal v9.3.96 - Ready for interaction.');
-    
-    await this.delay(2000);
+    this.generatePromptMessages();
     this.startMatrixBackground();
-    
-    // Add initial prompt messages with delays between them
-    this.addPromptMessage('Bienvenido al Perfilador Analítico de Delfos.', false);
-    this.addPromptMessage('What would you like to explore today?', false);
-    this.addPromptMessage('> [1] Data Analysis  [2] System Info  [3] Help  [4] Custom Query', false);
+  }
+
+  private async generatePromptMessages(): Promise<void> {
+    this.addPromptMessage('Bienvenido al Perfilador Analítico de Delfos.');
+    this.addPromptMessage('Elige tu perfil de investigador:');
+    this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
   }
 
   private addBootMessages(): void {
     const bootMessages = [
-      'Initializing Data Mesh Protocol...',
       'Loading neural pathways from GenAI Account...',
       'Establishing quantum entanglement by Expody...',
       'Calibrating reality matrix through Bifröst...',
@@ -351,7 +348,7 @@ export class MatrixTerminal extends LitElement {
     bootMessages.forEach((message, index) => {
       setTimeout(() => {
         this.addSystemMessage(message);
-      }, index * 1000);
+      }, index * 100);
     });
   }
 
@@ -367,23 +364,16 @@ export class MatrixTerminal extends LitElement {
     this.requestUpdate();
   }
 
-  private addPromptMessage(content: string, typing: boolean = true): void {
+  private addPromptMessage(content: string): void {
     const line: TerminalLine = {
       id: this.generateLineId(),
       content,
       type: 'prompt',
       timestamp: Date.now(),
-      isTyping: typing
+      isTyping: true
     };
-    if (typing) {
-      this.terminalState.lines.push(line);
-      this.requestUpdate();
-    }
-    // show prompt message immediately without wait for user typing
-    else{
-      this.terminalState.lines.push(line);
-      this.requestUpdate();
-    }
+    this.terminalState.lines.push(line);
+    this.requestUpdate();
     
     // Simulate typing effect
     setTimeout(() => {
@@ -449,7 +439,7 @@ export class MatrixTerminal extends LitElement {
 
   private async processUserInput(input: string): Promise<void> {
     // Simulate processing delay
-    await this.delay(1000 + Math.random() * 1000);
+    await this.delay(1000 + Math.random() * 100);
     
     // Simple command processing (stub)
     let response = '';
