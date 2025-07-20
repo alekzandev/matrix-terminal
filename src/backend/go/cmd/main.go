@@ -96,7 +96,7 @@ func getQuestionIDs(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/question", getQuestionByID)
 	http.HandleFunc("/answer", getAnswerByQuestionID)
-	http.HandleFunc("/questions", getQuestionIDs)
+	http.HandleFunc("/choose-questions", getQuestionIDs)
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
