@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 type Question struct {
@@ -81,9 +83,20 @@ func getAnswerByQuestionID(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Answer not found"))
 }
 
+func getQuestionIDs(w http.ResponseWriter, r *http.Request) {
+	rand.Seed(time.Now().UnixNano())
+	var numbers []int
+	for i := 0; i < 5; i++ {
+		numbers = append(numbers, rand.Intn(16)+1)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(numbers)
+}
+
 func main() {
 	http.HandleFunc("/question", getQuestionByID)
 	http.HandleFunc("/answer", getAnswerByQuestionID)
+	http.HandleFunc("/questions", getQuestionIDs)
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
