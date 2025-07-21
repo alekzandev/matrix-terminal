@@ -305,7 +305,8 @@ export class MatrixTerminal extends LitElement {
 
   constructor() {
     super();
-    this.api = new TerminalAPI();
+    // Explicitly set the Go API URL to ensure it uses port 8080
+    this.api = new TerminalAPI('http://localhost:8000', 'http://localhost:8080');
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -661,16 +662,65 @@ export class MatrixTerminal extends LitElement {
   private async finishQuestions(): Promise<void> {
     this.isAnsweringQuestions = false;
     this.addSystemMessage('¡Evaluación completada!');
-    this.addSystemMessage(`Respuestas enviadas: ${this.userAnswers.join(', ').toUpperCase()}`);
     
-    // Calculate score (you can implement actual scoring logic here)
-    const score = Math.floor(Math.random() * 100); // Placeholder
-    this.addOutput(`Puntuación obtenida: ${score}%`);
+    // Update user file with questions and answers
+    try {
+      const updateSuccess = await this.api.updateUserWithAnswers(
+        this.userEmail,
+        this.sessionId,
+        this.currentQuestions,
+        this.userAnswers
+      );
+      
+      if (updateSuccess) {
+        this.addSystemMessage(`Respuestas enviadas: ${this.userAnswers.join(', ').toUpperCase()}`);
+      } else {
+        this.addSystemMessage('⚠️ Error al guardar resultados, pero se completó la evaluación.');
+      }
+    } catch (error) {
+      console.error('Error updating user file:', error);
+      this.addSystemMessage('⚠️ Error al guardar resultados, pero se completó la evaluación.');
+    }
     
-    if (score >= 80) {
-      this.addOutput('¡Felicitaciones! Has aprobado el reto.');
-    } else {
-      this.addOutput('No alcanzaste el 80% requerido. ¡Inténtalo de nuevo!');
+    // Evaluate answers using the API
+    this.addSystemMessage('🔄 Evaluando respuestas...');
+    
+    try {
+      // Format question IDs correctly (CRD0001, CRD0002, etc.)
+      const questionIds = this.currentQuestions.map(q => `CRD${String(q).padStart(4, '0')}`);
+      const evaluation = await this.api.evaluateAnswers(questionIds, this.userAnswers);
+      
+      if (evaluation.status === 'success') {
+        // Display detailed results
+        this.addSystemMessage('✅ Evaluación completada');
+        this.addOutput(`📊 Resultados:`);
+        this.addOutput(`   Total de preguntas: ${evaluation.totalQuestions}`);
+        this.addOutput(`   Respuestas correctas: ${evaluation.correctAnswers}`);
+        this.addOutput(`   Respuestas incorrectas: ${evaluation.incorrectAnswers}`);
+        this.addOutput(`   Puntuación: ${evaluation.scorePercentage.toFixed(1)}%`);
+        
+        // Show final message based on score
+        if (evaluation.scorePercentage >= 80) {
+          this.addOutput('🎉 ¡Felicitaciones! Has aprobado el reto.');
+          this.addOutput('   Has demostrado un excelente conocimiento.');
+        } else if (evaluation.scorePercentage >= 60) {
+          this.addOutput('📈 Buen intento, pero necesitas mejorar.');
+          this.addOutput('   El 80% es requerido para aprobar. ¡Sigue practicando!');
+        } else {
+          this.addOutput('📚 No alcanzaste el puntaje mínimo.');
+          this.addOutput('   Te recomendamos estudiar más y volver a intentarlo.');
+        }
+        
+      } else {
+        // Fallback if evaluation fails
+        this.addSystemMessage('⚠️ Error al evaluar respuestas. Mostrando resultado básico.');
+        this.addOutput(`Respuestas completadas: ${this.userAnswers.length}/${this.currentQuestions.length}`);
+      }
+      
+    } catch (error) {
+      console.error('Error evaluating answers:', error);
+      this.addSystemMessage('⚠️ Error al evaluar respuestas. Mostrando resultado básico.');
+      this.addOutput(`Respuestas completadas: ${this.userAnswers.length}/${this.currentQuestions.length}`);
     }
   }
 

@@ -76,6 +76,34 @@ else
 fi
 
 echo ""
+echo "4. Testing /user/update endpoint..."
+
+# Test user update
+response=$(curl -s -X POST http://localhost:8080/user/update \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "test@example.com",
+        "sessionId": "test123",
+        "questionId": "1",
+        "answer": "a"
+    }')
+
+echo "   📄 Response: $response"
+
+echo ""
+echo "5. Testing /evaluate-answers endpoint..."
+
+# Test answer evaluation
+response=$(curl -s -X POST http://localhost:8080/evaluate-answers \
+    -H "Content-Type: application/json" \
+    -d '{
+        "questionIds": ["1", "2", "3"],
+        "userAnswers": ["a", "b", "c"]
+    }')
+
+echo "   📄 Response: $response"
+echo ""
+
 echo "🏁 Integration test complete!"
 echo ""
 echo "📋 Next steps:"

@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -16,8 +18,9 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Set CORS headers for all requests
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept")
 		w.Header().Set("Access-Control-Max-Age", "3600")
+		w.Header().Set("Access-Control-Allow-Credentials", "false")
 
 		// Handle preflight OPTIONS request
 		if r.Method == "OPTIONS" {
@@ -79,6 +82,46 @@ type CreateUserResponse struct {
 	Message  string `json:"message"`
 	Filename string `json:"filename"`
 	User     User   `json:"user"`
+}
+
+// UpdateUserRequest represents the request body for updating user with answers
+type UpdateUserRequest struct {
+	UserEmail   string   `json:"userEmail"`
+	SessionID   string   `json:"sessionId"`
+	QuestionIds []int    `json:"questionIds"`
+	UserAnswers []string `json:"userAnswers"`
+}
+
+// UpdateUserResponse represents the response for user update
+type UpdateUserResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+// EvaluateAnswersRequest represents the request body for answer evaluation
+type EvaluateAnswersRequest struct {
+	QuestionIds []string `json:"questionIds"`
+	UserAnswers []string `json:"userAnswers"`
+}
+
+// AnswerEvaluationResult represents the result for a single question evaluation
+type AnswerEvaluationResult struct {
+	QuestionID    string `json:"questionId"`
+	UserAnswer    string `json:"userAnswer"`
+	CorrectAnswer string `json:"correctAnswer"`
+	IsCorrect     bool   `json:"isCorrect"`
+	Description   string `json:"description,omitempty"`
+}
+
+// EvaluateAnswersResponse represents the response for answer evaluation
+type EvaluateAnswersResponse struct {
+	Status           string                   `json:"status"`
+	Message          string                   `json:"message"`
+	TotalQuestions   int                      `json:"totalQuestions"`
+	CorrectAnswers   int                      `json:"correctAnswers"`
+	IncorrectAnswers int                      `json:"incorrectAnswers"`
+	ScorePercentage  float64                  `json:"scorePercentage"`
+	Results          []AnswerEvaluationResult `json:"results"`
 }
 
 var questions = []Question{
@@ -224,11 +267,169 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// updateUser handles updating an existing user file with questions and answers
+// It expects a POST request with JSON body containing userEmail, sessionId, questionIds, and userAnswers
+func updateUser(w http.ResponseWriter, r *http.Request) {
+	// Only allow POST requests (OPTIONS is handled by middleware)
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req UpdateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("Error decoding update request: %v", err)
+		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+		return
+	}
+
+	// Validate required fields
+	if req.UserEmail == "" || req.SessionID == "" {
+		log.Printf("Missing required fields: userEmail=%s, sessionId=%s", req.UserEmail, req.SessionID)
+		http.Error(w, "userEmail and sessionId are required", http.StatusBadRequest)
+		return
+	}
+
+	// Create filename: userEmail_sessionId.txt
+	filename := req.UserEmail + "_" + req.SessionID + ".txt"
+	dataDir := "data"
+	filePath := filepath.Join(dataDir, filename)
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Printf("User file does not exist: %s", filePath)
+		http.Error(w, "User file not found", http.StatusNotFound)
+		return
+	}
+
+	// Read existing content
+	existingContent, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Printf("Error reading user file: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Convert question IDs to comma-separated string
+	questionIdsStr := ""
+	for i, id := range req.QuestionIds {
+		if i > 0 {
+			questionIdsStr += ","
+		}
+		questionIdsStr += fmt.Sprintf("%d", id)
+	}
+
+	// Convert answers to comma-separated string (uppercase)
+	answersStr := ""
+	for i, answer := range req.UserAnswers {
+		if i > 0 {
+			answersStr += ","
+		}
+		answersStr += strings.ToUpper(answer)
+	}
+
+	// Append new lines with question IDs and answers
+	updatedContent := string(existingContent) + questionIdsStr + "\n" + answersStr + "\n"
+
+	// Write updated content back to file
+	if err := os.WriteFile(filePath, []byte(updatedContent), 0644); err != nil {
+		log.Printf("Error updating user file: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Successfully updated user file: %s with %d questions and %d answers",
+		filePath, len(req.QuestionIds), len(req.UserAnswers))
+
+	// Create response
+	response := UpdateUserResponse{
+		Status:  "success",
+		Message: fmt.Sprintf("User file updated with %d questions and %d answers", len(req.QuestionIds), len(req.UserAnswers)),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// evaluateAnswers handles the evaluation of user answers
+// It expects a POST request with JSON body containing questionIds and userAnswers
+func evaluateAnswers(w http.ResponseWriter, r *http.Request) {
+	// Only allow POST requests (OPTIONS is handled by middleware)
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req EvaluateAnswersRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("Error decoding evaluation request: %v", err)
+		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+		return
+	}
+
+	// Validate required fields
+	if len(req.QuestionIds) == 0 || len(req.UserAnswers) == 0 {
+		http.Error(w, "questionIds and userAnswers are required", http.StatusBadRequest)
+		return
+	}
+
+	// Evaluate answers
+	var results []AnswerEvaluationResult
+	correctCount := 0
+	incorrectCount := 0
+
+	for i, questionID := range req.QuestionIds {
+		var result AnswerEvaluationResult
+		result.QuestionID = questionID
+		result.UserAnswer = req.UserAnswers[i]
+
+		// Find correct answer
+		for _, a := range answers {
+			if a.QuestionID == questionID {
+				result.CorrectAnswer = a.Answer
+				break
+			}
+		}
+
+		// Check if answer is correct (case-insensitive)
+		if strings.EqualFold(strings.TrimSpace(result.UserAnswer), strings.TrimSpace(result.CorrectAnswer)) {
+			result.IsCorrect = true
+			correctCount++
+		} else {
+			result.IsCorrect = false
+			incorrectCount++
+		}
+
+		results = append(results, result)
+	}
+
+	// Calculate score percentage
+	scorePercentage := (float64(correctCount) / float64(len(req.QuestionIds))) * 100
+
+	// Create response
+	response := EvaluateAnswersResponse{
+		Status:           "success",
+		Message:          "Answers evaluated successfully",
+		TotalQuestions:   len(req.QuestionIds),
+		CorrectAnswers:   correctCount,
+		IncorrectAnswers: incorrectCount,
+		ScorePercentage:  scorePercentage,
+		Results:          results,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
 func main() {
 	http.HandleFunc("/question", withMiddleware(getQuestionByID))
 	http.HandleFunc("/answer", withMiddleware(getAnswerByQuestionID))
 	http.HandleFunc("/choose-questions", withMiddleware(getQuestionIDs))
 	http.HandleFunc("/user/create", withMiddleware(createUser))
+	http.HandleFunc("/user/update", withMiddleware(updateUser))
+	http.HandleFunc("/evaluate-answers", withMiddleware(evaluateAnswers))
 
 	log.Println("🚀 Starting DelfosProfiler Go API Server on :8080")
 	log.Println("📡 CORS enabled for all origins")
@@ -237,6 +438,8 @@ func main() {
 	log.Println("  GET  /answer?question_id=<ID>")
 	log.Println("  GET  /choose-questions")
 	log.Println("  POST /user/create")
+	log.Println("  POST /user/update")
+	log.Println("  POST /evaluate-answers")
 	log.Println("🔧 Middleware: CORS + Logging enabled")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

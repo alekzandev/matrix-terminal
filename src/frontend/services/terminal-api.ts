@@ -198,6 +198,84 @@ export class TerminalAPI {
     }
   }
 
+  // Update user session file with questions and answers via Go API
+  async updateUserWithAnswers(userEmail: string, sessionId: string, questionIds: number[], userAnswers: string[]): Promise<boolean> {
+    try {
+      console.log(`🔄 Updating user file: ${userEmail} with questions and answers`);
+      
+      const response = await fetch(`${this.goApiUrl}/user/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail,
+          sessionId,
+          questionIds,
+          userAnswers
+        })
+      });
+
+      console.log(`📡 Update API Response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ Update API Error: ${response.status} - ${errorText}`);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log(`✅ User file updated successfully:`, result);
+      return true;
+
+    } catch (error) {
+      console.error('❌ Error updating user file:', error);
+      return false;
+    }
+  }
+
+  async updateUser(email: string, sessionId: string, questionId: string, answer: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.goApiUrl}/user/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          sessionId,
+          questionId,
+          answer
+        })
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+  }
+
+  async evaluateAnswers(questionIds: string[], userAnswers: string[]): Promise<any> {
+    try {
+      const response = await fetch(`${this.goApiUrl}/evaluate-answers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          questionIds,
+          userAnswers
+        })
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error evaluating answers:', error);
+      throw error;
+    }
+  }
+
   // Simulated responses for offline/development mode
   getSimulatedResponse(input: string, sessionId: string): AIResponse {
     const responses = this.getResponseMap();

@@ -65,6 +65,55 @@ const questionId = `CRD${String(questionIds[0]).padStart(4, '0')}`;
 const question = await this.api.getQuestion(questionId);
 ```
 
+### 3. Answer Evaluation
+
+**Endpoint:** `POST /evaluate-answers`
+
+**Description:** Evaluates user answers against correct answers and returns a detailed score report.
+
+**Request Body:**
+```json
+{
+  "questionIds": ["1", "2", "3", "4", "5"],
+  "userAnswers": ["a", "b", "c", "d", "a"]
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Answers evaluated successfully",
+  "totalQuestions": 5,
+  "correctAnswers": 4,
+  "incorrectAnswers": 1,
+  "scorePercentage": 80.0,
+  "results": [
+    {
+      "questionId": "1",
+      "userAnswer": "a",
+      "correctAnswer": "a",
+      "isCorrect": true,
+      "description": "Question: ¿Cuál es la capital de Francia?"
+    },
+    {
+      "questionId": "2",
+      "userAnswer": "b",
+      "correctAnswer": "c",
+      "isCorrect": false,
+      "description": "Question: ¿En qué año llegó el hombre a la Luna?"
+    }
+  ]
+}
+```
+
+**Features:**
+- Case-insensitive answer comparison
+- Detailed breakdown of each question result
+- Percentage score calculation
+- Handles invalid question IDs gracefully
+- Validates input array lengths
+
 ## 🚀 Usage Instructions
 
 ### 1. Start the Backend
