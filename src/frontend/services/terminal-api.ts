@@ -1,10 +1,29 @@
 import { UserMessage, AIResponse, TerminalMessage } from '../types/terminal.js';
 
+// Interface for user creation API
+export interface CreateUserRequest {
+  userEmail: string;
+  sessionId: string;
+}
+
+export interface CreateUserResponse {
+  status: string;
+  message: string;
+  filename: string;
+  user: {
+    userEmail: string;
+    sessionId: string;
+    createdAt: string;
+  };
+}
+
 export class TerminalAPI {
   private baseUrl: string;
+  private goApiUrl: string;
 
-  constructor(baseUrl = 'http://localhost:8000') {
+  constructor(baseUrl = 'http://localhost:8000', goApiUrl = 'http://localhost:8080') {
     this.baseUrl = baseUrl;
+    this.goApiUrl = goApiUrl;
   }
 
   async processInput(sessionId: string, input: string): Promise<AIResponse> {
@@ -89,6 +108,81 @@ export class TerminalAPI {
     } catch (error) {
       console.error('Health check failed:', error);
       return false;
+    }
+  }
+
+  // Create user session file via Go API
+  async createUser(userEmail: string, sessionId: string): Promise<CreateUserResponse> {
+    try {
+      const response = await fetch(`${this.goApiUrl}/user/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail,
+          sessionId
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      return await response.json();
+
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  // Get question by ID from Go API
+  async getQuestion(questionId: string): Promise<{ id: string; question: string }> {
+    try {
+      const response = await fetch(`${this.goApiUrl}/question?id=${questionId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching question:', error);
+      throw error;
+    }
+  }
+
+  // Get answer by question ID from Go API
+  async getAnswer(questionId: string): Promise<{ question_id: string; answer: string; description?: string }> {
+    try {
+      const response = await fetch(`${this.goApiUrl}/answer?question_id=${questionId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching answer:', error);
+      throw error;
+    }
+  }
+
+  // Get random question IDs from Go API
+  async getRandomQuestions(): Promise<number[]> {
+    try {
+      const response = await fetch(`${this.goApiUrl}/choose-questions`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching random questions:', error);
+      throw error;
     }
   }
 

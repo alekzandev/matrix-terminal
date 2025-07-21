@@ -1,6 +1,7 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { TerminalLine, TerminalState } from '../types/terminal.js';
+import { TerminalAPI } from '../services/terminal-api.js';
 import './terminal-input.js';
 import './terminal-output.js';
 import './terminal-cursor.js';
@@ -288,6 +289,13 @@ export class MatrixTerminal extends LitElement {
   private isCollectingEmail: boolean = false;
 
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  
+  private api: TerminalAPI;
+
+  constructor() {
+    super();
+    this.api = new TerminalAPI();
+  }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
@@ -495,34 +503,52 @@ export class MatrixTerminal extends LitElement {
     // Simulate processing delay
     await this.delay(1000 + Math.random() * 100);
     
-    // Simple command processing (stub)
     let response = '';
     
-    if (input === '1' || input.toLowerCase().includes('data')) {
-      response = 'Accessing data analysis modules...\nSelect analysis type:\n> [a] User Behavior  [b] Performance Metrics  [c] Trend Analysis';
-    } else if (input === '2' || input.toLowerCase().includes('system')) {
-      response = 'System Status: ONLINE\nCPU: 45% | RAM: 12.3GB/16GB | Uptime: 47:23:15\nMatrix Protocols: ACTIVE\nNeural Network: SYNCHRONIZED';
-    } else if (input === '3' || input.toLowerCase().includes('help')) {
-      response = 'Available commands:\n• Type numbers 1-4 to navigate main menu\n• Use natural language for custom queries\n• Type "clear" to clear terminal\n• Type "exit" to disconnect';
-    } else if (input === '4' || input.toLowerCase().includes('query')) {
-      response = 'Custom Query Mode activated.\nPlease describe what you would like to analyze or explore:';
-    } else if (input.toLowerCase() === 'clear') {
-      this.terminalState = {
-        ...this.terminalState,
-        lines: [],
-        isWaitingForResponse: false
-      };
-      this.addPromptMessage('Terminal cleared. What would you like to do next?');
-      this.requestUpdate();
-      return;
-    } else if (input.toLowerCase() === 'exit') {
-      response = 'Disconnecting from Matrix Terminal...\nConnection terminated.\nThank you for using ConvAnalytics.';
-      this.terminalState = {
-        ...this.terminalState,
-        connected: false
-      };
-    } else {
-      response = `Processing query: "${input}"\nAnalyzing request...\nQuery processed. Would you like to:\n> [1] Run Analysis  [2] Export Data  [3] Modify Query  [4] Return to Menu`;
+    try {
+      if (input === '1') {
+        // Créditos profile selected
+        response = 'Perfil seleccionado: ANALISTA DE CRÉDITOS\nCargando preguntas especializadas...';
+        this.addOutput(response);
+        
+        // Get random questions from API
+        const questionIds = await this.api.getRandomQuestions();
+        this.addSystemMessage(`Preguntas asignadas: ${questionIds.join(', ')}`);
+        this.addPromptMessage('Iniciando evaluación. Responde con la letra correcta (a, b, c, d):');
+        
+        // Load first question
+        if (questionIds.length > 0) {
+          const questionId = `CRD${String(questionIds[0]).padStart(4, '0')}`;
+          const question = await this.api.getQuestion(questionId);
+          this.addPromptMessage(`Pregunta 1: ${question.question}`);
+        }
+        
+      } else if (input === '2') {
+        response = 'Perfil seleccionado: ANALISTA DE SERVICIO\nMódulo en desarrollo...';
+      } else if (input === '3') {
+        response = 'Perfil seleccionado: ANALISTA DE CLIENTES\nMódulo en desarrollo...';
+      } else if (input.toLowerCase() === 'clear') {
+        this.terminalState = {
+          ...this.terminalState,
+          lines: [],
+          isWaitingForResponse: false
+        };
+        this.addPromptMessage('Terminal cleared. What would you like to do next?');
+        this.requestUpdate();
+        return;
+      } else if (input.toLowerCase() === 'exit') {
+        response = 'Disconnecting from Matrix Terminal...\nConnection terminated.\nThank you for using ConvAnalytics.';
+        this.terminalState = {
+          ...this.terminalState,
+          connected: false
+        };
+      } else {
+        response = `Processing query: "${input}"\nAnalyzing request...\nQuery processed. Would you like to:\n> [1] Run Analysis  [2] Export Data  [3] Modify Query  [4] Return to Menu`;
+      }
+      
+    } catch (error) {
+      console.error('Error processing user input:', error);
+      response = 'Error: Unable to process request. Please try again or contact support.';
     }
     
     this.addOutput(response);
@@ -601,36 +627,41 @@ export class MatrixTerminal extends LitElement {
     // console.log('requestUpdate called from collectUserEmail'); // Debug log
   }
 
-  private proceedAfterEmail(): void {
-    // console.log('proceedAfterEmail called with email:', this.userEmail); // Debug log
-    // console.log('About to add confirmation messages'); // Debug log
-    
+  private async proceedAfterEmail(): Promise<void> {
     try {
       this.addSystemMessage(`Correo registrado: ${this.userEmail}`);
-      // console.log('First message added successfully'); // Debug log
+      
+      // Call the backend API to create user file using the service
+      await this.api.createUser(this.userEmail, this.sessionId);
       
       this.addSystemMessage('Continuando con el sistema...');
-      // console.log('Second message added successfully'); // Debug log
       
       // Show the main menu after a delay
       setTimeout(() => {
-        // console.log('Adding main menu messages'); // Debug log
+        this.addPromptMessage('Bienvenido al Perfilador Analítico de Delfos.');
         this.addPromptMessage('Elige tu perfil de investigador:');
         this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
-        // console.log('Main menu messages added'); // Debug log
       }, 1500);
       
-      // Continue with normal terminal flow
-      this.terminalState = {
-        ...this.terminalState,
-        isWaitingForResponse: false
-      };
-      this.requestUpdate();
-      // console.log('proceedAfterEmail completed successfully'); // Debug log
-      
     } catch (error) {
-      console.error('Error in proceedAfterEmail:', error); // Debug log
+      // Handle API or network errors
+      console.error('Error calling user creation API:', error);
+      this.addSystemMessage('⚠ Error al crear sesión de usuario');
+      this.addSystemMessage('Continuando en modo offline...');
+      
+      // Continue anyway with the menu
+      setTimeout(() => {
+        this.addPromptMessage('Elige tu perfil de investigador:');
+        this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
+      }, 1500);
     }
+    
+    // Continue with normal terminal flow
+    this.terminalState = {
+      ...this.terminalState,
+      isWaitingForResponse: false
+    };
+    this.requestUpdate();
   }
 
   // Method to get the saved email (for debugging/testing)
