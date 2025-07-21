@@ -5,6 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -17,6 +19,27 @@ type Answer struct {
 	QuestionID  string `json:"question_id"`
 	Answer      string `json:"answer"`
 	Description string `json:"description,omitempty"` // Optional field for additional context
+}
+
+// User represents the data for creating a new user session file
+type User struct {
+	UserEmail string `json:"userEmail"`
+	SessionID string `json:"sessionId"`
+	CreatedAt string `json:"createdAt"`
+}
+
+// CreateUserRequest represents the request body for user creation
+type CreateUserRequest struct {
+	UserEmail string `json:"userEmail"`
+	SessionID string `json:"sessionId"`
+}
+
+// CreateUserResponse represents the response for user creation
+type CreateUserResponse struct {
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	Filename string `json:"filename"`
+	User     User   `json:"user"`
 }
 
 var questions = []Question{
@@ -93,10 +116,96 @@ func getQuestionIDs(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(numbers)
 }
 
+// createUser handles the creation of a new user file
+// It expects a POST request with JSON body containing userEmail and sessionId
+func createUser(w http.ResponseWriter, r *http.Request) {
+	// Enable CORS for development
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Handle preflight requests
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Only allow POST requests
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req CreateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+		return
+	}
+
+	// Validate required fields
+	if req.UserEmail == "" || req.SessionID == "" {
+		http.Error(w, "userEmail and sessionId are required", http.StatusBadRequest)
+		return
+	}
+
+	// Create user object with timestamp
+	user := User{
+		UserEmail: req.UserEmail,
+		SessionID: req.SessionID,
+		CreatedAt: time.Now().Format(time.RFC3339),
+	}
+
+	// Create filename: userEmail_sessionId.txt (changed from .json to .txt)
+	filename := req.UserEmail + "_" + req.SessionID + ".txt"
+
+	// Ensure the data directory exists
+	dataDir := "data"
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		log.Printf("Error creating data directory: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Full file path
+	filePath := filepath.Join(dataDir, filename)
+
+	// Create plain text content with email and sessionId on separate lines
+	fileContent := req.UserEmail + "\n" + req.SessionID + "\n"
+
+	// Write file as plain text
+	if err := os.WriteFile(filePath, []byte(fileContent), 0644); err != nil {
+		log.Printf("Error writing user file: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Successfully created user file: %s", filePath)
+
+	// Create response
+	response := CreateUserResponse{
+		Status:   "success",
+		Message:  "User session file created successfully",
+		Filename: filename,
+		User:     user,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
+}
+
 func main() {
 	http.HandleFunc("/question", getQuestionByID)
 	http.HandleFunc("/answer", getAnswerByQuestionID)
 	http.HandleFunc("/choose-questions", getQuestionIDs)
+	http.HandleFunc("/user/create", createUser)
+
 	log.Println("Starting server on :8080")
+	log.Println("Available endpoints:")
+	log.Println("  GET  /question?id=<ID>")
+	log.Println("  GET  /answer?question_id=<ID>")
+	log.Println("  GET  /choose-questions")
+	log.Println("  POST /user/create")
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
