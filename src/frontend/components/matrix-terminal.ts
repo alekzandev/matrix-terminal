@@ -271,7 +271,7 @@ export class MatrixTerminal extends LitElement {
   private bootSequence = false;
 
   @state()
-  private countdownTime: number = 62; // 5 minutes in seconds
+  private countdownTime: number = 300; // 5 minutes in seconds
 
   @state()
   private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
@@ -317,7 +317,6 @@ export class MatrixTerminal extends LitElement {
   private startTerminal(): void {
     this.initializeTerminal();
     this.startMatrixBackground();
-    this.startCountdown();
   }
 
   private generateSessionId(): string {
@@ -511,6 +510,9 @@ export class MatrixTerminal extends LitElement {
         response = 'Perfil seleccionado: ANALISTA DE CRÉDITOS\nCargando preguntas especializadas...';
         this.addOutput(response);
         
+        // Start countdown immediately when profile is selected
+        this.startCountdown();
+        
         // Get random questions from API
         const questionIds = await this.api.getRandomQuestions();
         this.addSystemMessage(`Preguntas asignadas: ${questionIds.join(', ')}`);
@@ -525,8 +527,12 @@ export class MatrixTerminal extends LitElement {
         
       } else if (input === '2') {
         response = 'Perfil seleccionado: ANALISTA DE SERVICIO\nMódulo en desarrollo...';
+        // Start countdown immediately when profile is selected
+        this.startCountdown();
       } else if (input === '3') {
         response = 'Perfil seleccionado: ANALISTA DE CLIENTES\nMódulo en desarrollo...';
+        // Start countdown immediately when profile is selected
+        this.startCountdown();
       } else if (input.toLowerCase() === 'clear') {
         this.terminalState = {
           ...this.terminalState,
@@ -638,7 +644,6 @@ export class MatrixTerminal extends LitElement {
       
       // Show the main menu after a delay
       setTimeout(() => {
-        this.addPromptMessage('Bienvenido al Perfilador Analítico de Delfos.');
         this.addPromptMessage('Elige tu perfil de investigador:');
         this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
       }, 1500);
