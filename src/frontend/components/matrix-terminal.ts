@@ -151,6 +151,49 @@ export class MatrixTerminal extends LitElement {
       color: #ff4444;
     }
 
+    .winner-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #00ff41;
+      padding: 20px;
+    }
+
+    .winner-results {
+      margin: 20px 0;
+      padding: 20px;
+      border: 2px solid #00ff41;
+      border-radius: 10px;
+      background: rgba(0, 255, 65, 0.1);
+      min-width: 400px;
+    }
+
+    .results-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .results-label {
+      color: #008f11;
+    }
+
+    .results-value {
+      color: #00ff41;
+      font-weight: bold;
+    }
+
+    .score-highlight {
+      font-size: 24px;
+      color: #00ff41;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+      margin: 15px 0;
+    }
+
     .welcome-logo {
       font-size: 32px;
       font-weight: 500;
@@ -175,6 +218,14 @@ export class MatrixTerminal extends LitElement {
       animation: logo-glow-failed 3s ease-in-out infinite;
     }
 
+    .winner-logo {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      animation: logo-glow-winner 3s ease-in-out infinite;
+    }
+
     @keyframes logo-glow {
       0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
       50% { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8), 0 0 30px rgba(0, 255, 65, 0.3); }
@@ -188,6 +239,11 @@ export class MatrixTerminal extends LitElement {
     @keyframes logo-glow-failed {
       0%, 100% { text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
       50% { text-shadow: 0 0 20px rgba(255, 68, 68, 0.8), 0 0 30px rgba(255, 68, 68, 0.3); }
+    }
+
+    @keyframes logo-glow-winner {
+      0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
+      50% { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8), 0 0 30px rgba(0, 255, 65, 0.3); }
     }
 
     .welcome-message {
@@ -324,6 +380,12 @@ export class MatrixTerminal extends LitElement {
 
   @state()
   private quizFailed: boolean = false;
+
+  @state()
+  private quizPassed: boolean = false;
+
+  @state()
+  private evaluationResults: any = null;
 
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   
@@ -723,13 +785,12 @@ export class MatrixTerminal extends LitElement {
         
         // Show final message based on score
         if (evaluation.scorePercentage >= 75) {
-          this.addOutput(`📊 Resultados:`);
-          this.addOutput(`   Total de preguntas: ${evaluation.totalQuestions}`);
-          this.addOutput(`   Respuestas correctas: ${evaluation.correctAnswers}`);
-          this.addOutput(`   Respuestas incorrectas: ${evaluation.incorrectAnswers}`);
-          this.addOutput(`   Puntuación: ${evaluation.scorePercentage.toFixed(1)}%`);
-          this.addOutput('🎉 ¡Felicitaciones! Has aprobado el reto.');
-          this.addOutput('   Has demostrado un excelente conocimiento.');
+          // User passed the quiz - show winner screen
+          this.evaluationResults = evaluation;
+          setTimeout(() => {
+            this.quizPassed = true;
+            this.requestUpdate();
+          }, 3000); // Show the winner screen after 3 seconds
         } else {
           // User failed the quiz - show failed screen
           setTimeout(() => {
@@ -906,15 +967,60 @@ export class MatrixTerminal extends LitElement {
           <div class="matrix-background"></div>
           
           <div class="failed-screen">
-            <div class="failed-logo">❌ Lo diste todo, pero…</div>
+            <div class="failed-logo">❌ ¡Oops! No lograste el puntaje mínimo</div>
             <div class="welcome-message">
-              Algunas respuestas no eran las correctas. Te faltó un poquito más de malicia, pero vamos por buen camino.
+              No te preocupes, crack! Todos los expertos empezaron desde abajo 📈
             </div>
             <div class="welcome-message">
-              ¡No te rindas que el conocimiento es power!
+              Sigue practicando y analiza más data para mejorar tus habilidades 🔍
+            </div>
+            <div class="welcome-message">
+              ¡El siguiente reto será tuyo! 💪✨
             </div>
             <div class="press-enter" style="margin-top: 30px;">
               <span>Presiona F5 para intentar nuevamente</span>
+              <div class="cursor"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (this.quizPassed && this.evaluationResults) {
+      return html`
+        <div class="terminal-container screen-flicker">
+          <div class="scanlines"></div>
+          <div class="matrix-background"></div>
+          
+          <div class="winner-screen">
+            <div class="winner-logo">🏆 ¡Qué crack!</div>
+            <div class="welcome-message">
+              Lo lograste, resolviste el reto de la caja negra como un verdadero/a #DataLover
+            </div>
+            <div class="welcome-message">
+              Tu olfato analítico está on fire 🔥
+            </div>
+            
+            <div class="winner-results">
+              <div class="results-row">
+                <span class="results-label">📊 Total de preguntas:</span>
+                <span class="results-value">${this.evaluationResults.totalQuestions}</span>
+              </div>
+              <div class="results-row">
+                <span class="results-label">✅ Respuestas correctas:</span>
+                <span class="results-value">${this.evaluationResults.correctAnswers}</span>
+              </div>
+              <div class="results-row">
+                <span class="results-label">❌ Respuestas incorrectas:</span>
+                <span class="results-value">${this.evaluationResults.incorrectAnswers}</span>
+              </div>
+              <div class="score-highlight">
+                🏆 Puntuación Final: ${this.evaluationResults.scorePercentage.toFixed(1)}%
+              </div>
+            </div>
+            
+            <div class="press-enter" style="margin-top: 30px;">
+              <span>Presiona Enter para buscar tu premio</span>
               <div class="cursor"></div>
             </div>
           </div>
