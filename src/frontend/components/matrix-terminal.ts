@@ -352,7 +352,6 @@ export class MatrixTerminal extends LitElement {
     // Add another small delay before collecting email
     await this.delay(500);
     
-    // this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
     this.collectUserEmail();
   }
 
@@ -543,13 +542,11 @@ export class MatrixTerminal extends LitElement {
         this.requestUpdate();
         return;
       } else if (input.toLowerCase() === 'exit') {
-        response = 'Disconnecting from Matrix Terminal...\nConnection terminated.\nThank you for using ConvAnalytics.';
+        response = 'Disconnecting from Matrix Terminal...\nConnection terminated.\nThank you for using our DELFOS ANALYTICS PROFILER.';
         this.terminalState = {
           ...this.terminalState,
           connected: false
         };
-      } else {
-        response = `Processing query: "${input}"\nAnalyzing request...\nQuery processed. Would you like to:\n> [1] Run Analysis  [2] Export Data  [3] Modify Query  [4] Return to Menu`;
       }
       
     } catch (error) {
