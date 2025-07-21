@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Terminal Debug</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #00ff41;
+            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+        }
+    </style>
+</head>
+<body>
+    <matrix-terminal></matrix-terminal>
+    <script type="module" src="src/main.js"></script>
+    
+    <script>
+        // Global debugging
+        window.addEventListener('load', () => {
+            console.log('Page loaded');
+            const terminal = document.querySelector('matrix-terminal');
+            console.log('Terminal element:', terminal);
+            
+            // Log all state changes
+            if (terminal) {
+                // Check every second to see the terminal state
+                setInterval(() => {
+                    console.log('Debug check - Terminal state:', {
+                        showWelcome: terminal.showWelcome,
+                        lines: terminal.terminalState?.lines?.length || 0,
+                        connected: terminal.terminalState?.connected || false,
+                        userEmail: terminal.userEmail || '',
+                        isCollectingEmail: terminal.isCollectingEmail || false
+                    });
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
