@@ -1266,7 +1266,7 @@ export class MatrixTerminal extends LitElement {
               </div>
             ` : html`
               <div class="roulette-spinning-text">
-                <span>Girando la ruleta...</span>
+                <span>Girando la ruleta</span>
                 <div class="loading-dots">
                   <span>.</span><span>.</span><span>.</span>
                 </div>

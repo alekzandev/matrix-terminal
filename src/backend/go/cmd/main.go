@@ -190,10 +190,20 @@ func getAnswerByQuestionID(w http.ResponseWriter, r *http.Request) {
 
 func getQuestionIDs(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
+
+	// Create a map to track used numbers and ensure uniqueness
+	used := make(map[int]bool)
 	var numbers []int
-	for i := 0; i < 5; i++ {
-		numbers = append(numbers, rand.Intn(16)+1)
+
+	// Generate 8 unique random numbers between 1 and 16
+	for len(numbers) < 8 {
+		num := rand.Intn(16) + 1 // Generate number between 1-16
+		if !used[num] {
+			used[num] = true
+			numbers = append(numbers, num)
+		}
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(numbers)
 }
