@@ -130,6 +130,13 @@ export class MatrixTerminal extends LitElement {
       text-align: center;
       color: #00ff41;
     }
+    .welcome-logo {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      animation: logo-glow 3s ease-in-out infinite;
+    }
 
     .timeout-screen {
       flex: 1;
@@ -139,6 +146,13 @@ export class MatrixTerminal extends LitElement {
       align-items: center;
       text-align: center;
       color: #ff4444;
+    }
+    .timeout-logo {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+      animation: logo-glow-timeout 3s ease-in-out infinite;
     }
 
     .failed-screen {
@@ -150,6 +164,13 @@ export class MatrixTerminal extends LitElement {
       text-align: center;
       color: #ff4444;
     }
+    .failed-logo {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+      animation: logo-glow-failed 3s ease-in-out infinite;
+    }
 
     .winner-screen {
       flex: 1;
@@ -160,6 +181,14 @@ export class MatrixTerminal extends LitElement {
       text-align: center;
       color: #00ff41;
       padding: 20px;
+    }
+      
+    .winner-logo {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      animation: logo-glow-winner 3s ease-in-out infinite;
     }
 
     .winner-results {
