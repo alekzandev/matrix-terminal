@@ -131,7 +131,7 @@ export class MatrixTerminal extends LitElement {
       color: #00ff41;
     }
     .welcome-logo {
-      font-size: 32px;
+      font-size: 60px;
       font-weight: 500;
       margin-bottom: 20px;
       text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
@@ -148,7 +148,7 @@ export class MatrixTerminal extends LitElement {
       color: #ff4444;
     }
     .timeout-logo {
-      font-size: 32px;
+      font-size: 60px;
       font-weight: 500;
       margin-bottom: 20px;
       text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
@@ -165,7 +165,7 @@ export class MatrixTerminal extends LitElement {
       color: #ff4444;
     }
     .failed-logo {
-      font-size: 32px;
+      font-size: 60px;
       font-weight: 500;
       margin-bottom: 20px;
       text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
@@ -182,9 +182,9 @@ export class MatrixTerminal extends LitElement {
       color: #00ff41;
       padding: 20px;
     }
-      
+
     .winner-logo {
-      font-size: 32px;
+      font-size: 60px;
       font-weight: 500;
       margin-bottom: 20px;
       text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
@@ -507,7 +507,7 @@ export class MatrixTerminal extends LitElement {
   private bootSequence = false;
 
   @state()
-  private countdownTime: number = 300; // 5 minutes in seconds
+  private countdownTime: number = 200; // 5 minutes in seconds
 
   @state()
   private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
@@ -1201,15 +1201,16 @@ export class MatrixTerminal extends LitElement {
           <div class="matrix-background"></div>
           
           <div class="failed-screen">
-            <div class="failed-logo">❌ ¡Oops! No lograste el puntaje mínimo</div>
+            <div class="failed-logo">❌ Lo diste todo, pero...</div>
             <div class="welcome-message">
-              No te preocupes, crack! Todos los expertos empezaron desde abajo 📈
+              Algunas respuestas no eran las correctas
+
             </div>
             <div class="welcome-message">
-              Sigue practicando y analiza más data para mejorar tus habilidades 🔍
+              Te faltó un poquito más de malicia, pero vamos por buen camino.
             </div>
             <div class="welcome-message">
-              ¡El siguiente reto será tuyo! 💪✨
+              ¡No te rindas que el conocimiento es power!
             </div>
             <div class="press-enter" style="margin-top: 30px;">
               <span>Presiona F5 para intentar nuevamente</span>
@@ -1229,7 +1230,7 @@ export class MatrixTerminal extends LitElement {
           <div class="roulette-screen">
             <div class="winner-logo">🎰 ¡RULETA DE PREMIOS!</div>
             <div class="welcome-message">
-              ¡Hora de la verdad! Veamos qué premio te tocó...
+              Crack, llegó el momento de la verdad... un baño de ruda 🌿 y pillemos qué te tocó...
             </div>
             
             <div class="roulette-container">
@@ -1256,10 +1257,10 @@ export class MatrixTerminal extends LitElement {
                 <div class="welcome-message" style="margin-top: 20px;">
                   ${this.rouletteResult.includes('Gloria') || this.rouletteResult.includes('honor') 
                     ? '¡Sigue practicando y mejorando tus skills analíticos!' 
-                    : '¡Increíble! Nos contactaremos contigo para entregarte tu premio 🎉'}
+                    : '¡Qué bendición! Este reto venía con premio sorpresa y te lo llevaste como un/a campeon@. Tu velocidad, tus respuestas y tu sabrosura analítica te ganaron un merch de Nequi.'}
                 </div>
                 <div class="press-enter" style="margin-top: 30px;">
-                  <span>Pasa con el Staff para reclamar tu premio</span>
+                  <span>¡Toma lo tuyo, crack! 💜</span>
                   <div class="cursor"></div>
                 </div>
               </div>
@@ -1310,7 +1311,7 @@ export class MatrixTerminal extends LitElement {
             </div>
             
             <div class="press-enter" style="margin-top: 30px;">
-              <span>Presiona Enter para participar por Merch</span>
+              <span>¡Y esto no se queda ahí! Presiona Enter y...</span>
               <div class="cursor"></div>
             </div>
           </div>

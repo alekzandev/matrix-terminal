@@ -148,7 +148,7 @@ var answers = []Answer{
 	{QuestionID: "CRD0002", Answer: "c", Description: "2.112.445.004.347"},
 	{QuestionID: "CRD0003", Answer: "b", Description: "114.859"},
 	{QuestionID: "CRD0004", Answer: "b", Description: "Emprendedor"},
-	c{QuestionID: "CRD0005", Answer: "b", Description: "2.412.512"},
+	{QuestionID: "CRD0005", Answer: "b", Description: "2.412.512"},
 	{QuestionID: "CRD0006", Answer: "a", Description: "11.913"},
 	{QuestionID: "CRD0007", Answer: "d", Description: "247.897.010.598"},
 	{QuestionID: "CRD0008", Answer: "b", Description: "21.346"},
