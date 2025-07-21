@@ -507,7 +507,7 @@ export class MatrixTerminal extends LitElement {
     try {
       if (input === '1') {
         // Créditos profile selected
-        response = 'Perfil seleccionado: ANALISTA DE CRÉDITOS\nCargando preguntas especializadas...';
+        response = 'Perfil seleccionado: INVESTIGADOR DE CRÉDITOS';
         this.addOutput(response);
         
         // Start countdown immediately when profile is selected

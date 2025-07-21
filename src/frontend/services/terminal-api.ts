@@ -24,6 +24,11 @@ export class TerminalAPI {
   constructor(baseUrl = 'http://localhost:8000', goApiUrl = 'http://localhost:8080') {
     this.baseUrl = baseUrl;
     this.goApiUrl = goApiUrl;
+    
+    // Log the API URLs for debugging
+    // console.log('🔧 TerminalAPI initialized with:');
+    // console.log('  Python API (AI):', this.baseUrl);
+    // console.log('  Go API (Backend):', this.goApiUrl);
   }
 
   async processInput(sessionId: string, input: string): Promise<AIResponse> {
@@ -114,6 +119,8 @@ export class TerminalAPI {
   // Create user session file via Go API
   async createUser(userEmail: string, sessionId: string): Promise<CreateUserResponse> {
     try {
+      // console.log(`🔄 Creating user: ${userEmail} with session: ${sessionId}`);
+      
       const response = await fetch(`${this.goApiUrl}/user/create`, {
         method: 'POST',
         headers: {
@@ -125,15 +132,20 @@ export class TerminalAPI {
         })
       });
 
+      // console.log(`📡 API Response status: ${response.status}`);
+
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`❌ API Error: ${response.status} - ${errorText}`);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      // console.log(`✅ User created successfully:`, result);
+      return result;
 
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error('❌ Error creating user:', error);
       throw error;
     }
   }

@@ -10,6 +10,44 @@ import (
 	"time"
 )
 
+// CORS middleware to handle cross-origin requests
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers for all requests
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Max-Age", "3600")
+
+		// Handle preflight OPTIONS request
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler
+		next(w, r)
+	}
+}
+
+// Enhanced logging middleware
+func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		log.Printf("🌐 %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
+
+		next(w, r)
+
+		duration := time.Since(start)
+		log.Printf("✅ Completed %s %s in %v", r.Method, r.URL.Path, duration)
+	}
+}
+
+// Combined middleware wrapper
+func withMiddleware(handler http.HandlerFunc) http.HandlerFunc {
+	return corsMiddleware(loggingMiddleware(handler))
+}
+
 type Question struct {
 	ID       string `json:"id"`
 	Question string `json:"question"`
@@ -119,18 +157,7 @@ func getQuestionIDs(w http.ResponseWriter, r *http.Request) {
 // createUser handles the creation of a new user file
 // It expects a POST request with JSON body containing userEmail and sessionId
 func createUser(w http.ResponseWriter, r *http.Request) {
-	// Enable CORS for development
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	// Handle preflight requests
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	// Only allow POST requests
+	// Only allow POST requests (OPTIONS is handled by middleware)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -138,12 +165,14 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 
 	var req CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("Error decoding request: %v", err)
 		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
 		return
 	}
 
 	// Validate required fields
 	if req.UserEmail == "" || req.SessionID == "" {
+		log.Printf("Missing required fields: userEmail=%s, sessionId=%s", req.UserEmail, req.SessionID)
 		http.Error(w, "userEmail and sessionId are required", http.StatusBadRequest)
 		return
 	}
@@ -195,17 +224,19 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/question", getQuestionByID)
-	http.HandleFunc("/answer", getAnswerByQuestionID)
-	http.HandleFunc("/choose-questions", getQuestionIDs)
-	http.HandleFunc("/user/create", createUser)
+	http.HandleFunc("/question", withMiddleware(getQuestionByID))
+	http.HandleFunc("/answer", withMiddleware(getAnswerByQuestionID))
+	http.HandleFunc("/choose-questions", withMiddleware(getQuestionIDs))
+	http.HandleFunc("/user/create", withMiddleware(createUser))
 
-	log.Println("Starting server on :8080")
-	log.Println("Available endpoints:")
+	log.Println("🚀 Starting DelfosProfiler Go API Server on :8080")
+	log.Println("📡 CORS enabled for all origins")
+	log.Println("📋 Available endpoints:")
 	log.Println("  GET  /question?id=<ID>")
 	log.Println("  GET  /answer?question_id=<ID>")
 	log.Println("  GET  /choose-questions")
 	log.Println("  POST /user/create")
+	log.Println("🔧 Middleware: CORS + Logging enabled")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
