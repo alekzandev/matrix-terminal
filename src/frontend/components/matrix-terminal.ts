@@ -507,7 +507,7 @@ export class MatrixTerminal extends LitElement {
   private bootSequence = false;
 
   @state()
-  private countdownTime: number = 200; // 5 minutes in seconds
+  private countdownTime: number = 60; // 5 minutes in seconds
 
   @state()
   private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
@@ -547,6 +547,9 @@ export class MatrixTerminal extends LitElement {
 
   @state()
   private showRoulette: boolean = false;
+
+  @state()
+  private countdownInterval: NodeJS.Timeout | null = null;
 
   @state()
   private rouletteSpinning: boolean = false;
@@ -971,12 +974,14 @@ export class MatrixTerminal extends LitElement {
         if (evaluation.scorePercentage >= 75) {
           // User passed the quiz - show winner screen
           this.evaluationResults = evaluation;
+          this.stopCountdown(); // Stop countdown when quiz is passed
           setTimeout(() => {
             this.quizPassed = true;
             this.requestUpdate();
           }, 3000); // Show the winner screen after 3 seconds
         } else {
           // User failed the quiz - show failed screen
+          this.stopCountdown(); // Stop countdown when quiz is failed
           setTimeout(() => {
             this.quizFailed = true;
             this.requestUpdate();
@@ -1031,16 +1036,35 @@ export class MatrixTerminal extends LitElement {
   }
 
   private startCountdown(): void {
-    const timerInterval = setInterval(() => {
-      if (this.countdownTime > 0) {
+    // Clear any existing countdown interval
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+    
+    this.countdownInterval = setInterval(() => {
+      if (this.countdownTime > 0 && !this.quizPassed && !this.quizFailed) {
         this.countdownTime -= 1;
         this.requestUpdate();
       } else {
-        clearInterval(timerInterval);
-        this.timeOver = true;
-        this.requestUpdate();
+        this.stopCountdown();
+        if (!this.quizPassed && !this.quizFailed) {
+          this.timeOver = true;
+          this.requestUpdate();
+        }
       }
     }, 1000);
+  }
+
+  private stopCountdown(): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.stopCountdown(); // Clean up timer when component is destroyed
   }
 
   private startRoulette(): void {
@@ -1174,7 +1198,7 @@ export class MatrixTerminal extends LitElement {
 
     const isTimeCritical = this.countdownTime < 0.2 * this.totalCountdownTime; // 20% of total time
 
-    if (this.timeOver) {
+    if (this.timeOver && !this.quizPassed && !this.quizFailed) {
       // console.log('Rendering timeout screen');
       return html`
         <div class="terminal-container screen-flicker">
