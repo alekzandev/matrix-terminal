@@ -141,6 +141,16 @@ export class MatrixTerminal extends LitElement {
       color: #ff4444;
     }
 
+    .failed-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #ff4444;
+    }
+
     .welcome-logo {
       font-size: 32px;
       font-weight: 500;
@@ -157,12 +167,25 @@ export class MatrixTerminal extends LitElement {
       animation: logo-glow-timeout 3s ease-in-out infinite;
     }
 
+    .failed-logo {
+      font-size: 32px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+      animation: logo-glow-failed 3s ease-in-out infinite;
+    }
+
     @keyframes logo-glow {
       0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
       50% { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8), 0 0 30px rgba(0, 255, 65, 0.3); }
     }
     
     @keyframes logo-glow-timeout {
+      0%, 100% { text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
+      50% { text-shadow: 0 0 20px rgba(255, 68, 68, 0.8), 0 0 30px rgba(255, 68, 68, 0.3); }
+    }
+
+    @keyframes logo-glow-failed {
       0%, 100% { text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
       50% { text-shadow: 0 0 20px rgba(255, 68, 68, 0.8), 0 0 30px rgba(255, 68, 68, 0.3); }
     }
@@ -298,6 +321,9 @@ export class MatrixTerminal extends LitElement {
 
   @state()
   private isAnsweringQuestions: boolean = false;
+
+  @state()
+  private quizFailed: boolean = false;
 
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   
@@ -692,23 +718,32 @@ export class MatrixTerminal extends LitElement {
       
       if (evaluation.status === 'success') {
         // Display detailed results
+        await this.delay(3000); // Small delay before showing results
         this.addSystemMessage('✅ Evaluación completada');
-        this.addOutput(`📊 Resultados:`);
-        this.addOutput(`   Total de preguntas: ${evaluation.totalQuestions}`);
-        this.addOutput(`   Respuestas correctas: ${evaluation.correctAnswers}`);
-        this.addOutput(`   Respuestas incorrectas: ${evaluation.incorrectAnswers}`);
-        this.addOutput(`   Puntuación: ${evaluation.scorePercentage.toFixed(1)}%`);
         
         // Show final message based on score
-        if (evaluation.scorePercentage >= 80) {
+        if (evaluation.scorePercentage >= 75) {
+          this.addOutput(`📊 Resultados:`);
+          this.addOutput(`   Total de preguntas: ${evaluation.totalQuestions}`);
+          this.addOutput(`   Respuestas correctas: ${evaluation.correctAnswers}`);
+          this.addOutput(`   Respuestas incorrectas: ${evaluation.incorrectAnswers}`);
+          this.addOutput(`   Puntuación: ${evaluation.scorePercentage.toFixed(1)}%`);
           this.addOutput('🎉 ¡Felicitaciones! Has aprobado el reto.');
           this.addOutput('   Has demostrado un excelente conocimiento.');
-        } else if (evaluation.scorePercentage >= 60) {
-          this.addOutput('📈 Buen intento, pero necesitas mejorar.');
-          this.addOutput('   El 80% es requerido para aprobar. ¡Sigue practicando!');
         } else {
-          this.addOutput('📚 No alcanzaste el puntaje mínimo.');
-          this.addOutput('   Te recomendamos estudiar más y volver a intentarlo.');
+          // User failed the quiz - show failed screen
+          setTimeout(() => {
+            this.quizFailed = true;
+            this.requestUpdate();
+          }, 3000); // Show the failed screen after 3 seconds
+
+          // if (evaluation.scorePercentage >= 60) {
+          //   this.addOutput('📈 Buen intento, pero necesitas mejorar.');
+          //   this.addOutput('   El 75% es requerido para aprobar. ¡Sigue practicando!');
+          // } else {
+          //   this.addOutput('📚 No alcanzaste el puntaje mínimo.');
+          //   this.addOutput('   Te recomendamos estudiar más y volver a intentarlo.');
+          // }
         }
         
       } else {
@@ -799,8 +834,6 @@ export class MatrixTerminal extends LitElement {
       // Call the backend API to create user file using the service
       await this.api.createUser(this.userEmail, this.sessionId);
       
-      this.addSystemMessage('Continuando con el sistema...');
-      
       // Show the main menu after a delay
       setTimeout(() => {
         this.addPromptMessage('Elige tu perfil de investigador:');
@@ -860,6 +893,29 @@ export class MatrixTerminal extends LitElement {
             </div>
             <div class="welcome-message">
               ¡A la próxima se rompe!
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (this.quizFailed) {
+      return html`
+        <div class="terminal-container screen-flicker">
+          <div class="scanlines"></div>
+          <div class="matrix-background"></div>
+          
+          <div class="failed-screen">
+            <div class="failed-logo">❌ Lo diste todo, pero…</div>
+            <div class="welcome-message">
+              Algunas respuestas no eran las correctas. Te faltó un poquito más de malicia, pero vamos por buen camino.
+            </div>
+            <div class="welcome-message">
+              ¡No te rindas que el conocimiento es power!
+            </div>
+            <div class="press-enter" style="margin-top: 30px;">
+              <span>Presiona F5 para intentar nuevamente</span>
+              <div class="cursor"></div>
             </div>
           </div>
         </div>
