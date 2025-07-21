@@ -1,10 +1,9 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { TerminalLine, TerminalState } from '../types/terminal.js';
-import { TerminalAPI } from '../services/terminal-api.js';
-import './terminal-input.js';
-import './terminal-output.js';
-import './terminal-cursor.js';
+import { TerminalLine, TerminalState, Question } from '../types/terminal';
+import { TerminalAPI } from '../services/terminal-api';
+import './terminal-input';
+import './terminal-output';
 
 @customElement('matrix-terminal')
 export class MatrixTerminal extends LitElement {
@@ -288,6 +287,18 @@ export class MatrixTerminal extends LitElement {
   @state()
   private isCollectingEmail: boolean = false;
 
+  @state()
+  private currentQuestions: number[] = [];
+
+  @state()
+  private currentQuestionIndex: number = 0;
+
+  @state()
+  private userAnswers: string[] = [];
+
+  @state()
+  private isAnsweringQuestions: boolean = false;
+
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   
   private api: TerminalAPI;
@@ -396,7 +407,7 @@ export class MatrixTerminal extends LitElement {
       content,
       type: 'prompt',
       timestamp: Date.now(),
-      isTyping: true
+      isTyping: content.length > 0 // Only show typing effect for non-empty content
     };
     // Create a new array to trigger Lit's reactivity
     this.terminalState = {
@@ -405,11 +416,16 @@ export class MatrixTerminal extends LitElement {
     };
     this.requestUpdate();
     
-    // Simulate typing effect
-    setTimeout(() => {
+    // Simulate typing effect only for non-empty content
+    if (content.length > 0) {
+      setTimeout(() => {
+        line.isTyping = false;
+        this.requestUpdate();
+      }, content.length * 50);
+    } else {
+      // For empty lines, immediately set isTyping to false
       line.isTyping = false;
-      this.requestUpdate();
-    }, content.length * 50);
+    }
   }
 
   private addUserInput(content: string): void {
@@ -459,7 +475,7 @@ export class MatrixTerminal extends LitElement {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  private handleUserInput(event: CustomEvent<string>): void {
+  private async handleUserInput(event: CustomEvent<string>): Promise<void> {
     const input = event.detail.trim();
     // console.log('User input received:', input, 'isCollectingEmail:', this.isCollectingEmail); // Debug log
     
@@ -485,6 +501,12 @@ export class MatrixTerminal extends LitElement {
       }
       return;
     }
+
+    // Check if we're answering questions
+    if (this.isAnsweringQuestions) {
+      await this.processAnswer(input);
+      return;
+    }
     
     // Set waiting state
     this.terminalState = {
@@ -500,36 +522,32 @@ export class MatrixTerminal extends LitElement {
   private async processUserInput(input: string): Promise<void> {
     // Simulate processing delay
     await this.delay(1000 + Math.random() * 100);
-    
+
     let response = '';
     
     try {
       if (input === '1') {
-        // Créditos profile selected
-        response = 'Perfil seleccionado: INVESTIGADOR DE CRÉDITOS';
-        this.addOutput(response);
         
         // Start countdown immediately when profile is selected
         this.startCountdown();
         
         // Get random questions from API
         const questionIds = await this.api.getRandomQuestions();
+        this.currentQuestions = questionIds;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = [];
+        this.isAnsweringQuestions = true;
+        
         this.addSystemMessage(`Preguntas asignadas: ${questionIds.join(', ')}`);
         this.addPromptMessage('Iniciando evaluación. Responde con la letra correcta (a, b, c, d):');
         
         // Load first question
-        if (questionIds.length > 0) {
-          const questionId = `CRD${String(questionIds[0]).padStart(4, '0')}`;
-          const question = await this.api.getQuestion(questionId);
-          this.addPromptMessage(`Pregunta 1: ${question.question}`);
-        }
+        await this.loadCurrentQuestion();
         
       } else if (input === '2') {
-        response = 'Perfil seleccionado: ANALISTA DE SERVICIO\nMódulo en desarrollo...';
         // Start countdown immediately when profile is selected
         this.startCountdown();
       } else if (input === '3') {
-        response = 'Perfil seleccionado: ANALISTA DE CLIENTES\nMódulo en desarrollo...';
         // Start countdown immediately when profile is selected
         this.startCountdown();
       } else if (input.toLowerCase() === 'clear') {
@@ -560,6 +578,100 @@ export class MatrixTerminal extends LitElement {
       isWaitingForResponse: false
     };
     this.requestUpdate();
+  }
+
+  private async loadCurrentQuestion(): Promise<void> {
+    if (this.currentQuestionIndex >= this.currentQuestions.length) {
+      await this.finishQuestions();
+      return;
+    }
+
+    const questionId = `CRD${String(this.currentQuestions[this.currentQuestionIndex]).padStart(4, '0')}`;
+    
+    try {
+      const question = await this.api.getQuestion(questionId);
+      const questionNumber = this.currentQuestionIndex + 1;
+      
+      // Display question header
+      this.addPromptMessage(`Pregunta ${questionNumber} de ${this.currentQuestions.length}:`);
+      await this.delay(100);
+      
+      this.addPromptMessage(''); // Empty line for spacing
+      await this.delay(100);
+      
+      // Display the question text
+      this.addPromptMessage(question.question);
+      await this.delay(100);
+      
+      this.addPromptMessage(''); // Empty line for spacing
+      await this.delay(100);
+      
+      // Display the options if they exist
+      if (question.options && Array.isArray(question.options) && question.options.length > 0) {
+        for (let index = 0; index < question.options.length; index++) {
+          const option = question.options[index];
+          const letter = String.fromCharCode(97 + index); // 'a', 'b', 'c', 'd'
+          const optionText = `${letter}) ${option}`;
+          this.addPromptMessage(optionText);
+          await this.delay(100); // Small delay between options
+        }
+      } else {
+        // If no options are available, show an error
+        this.addSystemMessage('Error: Esta pregunta no tiene opciones disponibles.');
+        this.currentQuestionIndex++;
+        await this.loadCurrentQuestion();
+        return;
+      }
+      
+      this.addPromptMessage(''); // Empty line for spacing
+      await this.delay(100);
+      
+    } catch (error) {
+      console.error('Error loading question:', error);
+      this.addSystemMessage(`Error cargando pregunta ${questionId}. Saltando a la siguiente...`);
+      this.currentQuestionIndex++;
+      await this.loadCurrentQuestion();
+    }
+  }
+
+  private async processAnswer(input: string): Promise<void> {
+    const validAnswers = ['a', 'b', 'c', 'd'];
+    const answer = input.toLowerCase().trim();
+
+    if (!validAnswers.includes(answer)) {
+      this.addSystemMessage('Por favor responde con a, b, c o d');
+      return;
+    }
+
+    // Store the answer
+    this.userAnswers.push(answer);
+    
+    // Move to next question
+    this.currentQuestionIndex++;
+    
+    if (this.currentQuestionIndex < this.currentQuestions.length) {
+      this.addSystemMessage(`Respuesta registrada: ${answer.toUpperCase()}`);
+      await this.delay(1000);
+      await this.loadCurrentQuestion();
+    } else {
+      await this.finishQuestions();
+    }
+  }
+
+  private async finishQuestions(): Promise<void> {
+    this.isAnsweringQuestions = false;
+    this.addSystemMessage('¡Evaluación completada!');
+    this.addSystemMessage(`Respuestas enviadas: ${this.userAnswers.join(', ').toUpperCase()}`);
+    
+    // Calculate score (you can implement actual scoring logic here)
+    const score = Math.floor(Math.random() * 100); // Placeholder
+    this.addOutput(`Puntuación obtenida: ${score}%`);
+    
+    if (score >= 80) {
+      this.addOutput('¡Felicitaciones! Has aprobado el reto.');
+    } else {
+      this.addOutput('No alcanzaste el 80% requerido. ¡Inténtalo de nuevo!');
+    }
   }
 
   private startMatrixBackground(): void {

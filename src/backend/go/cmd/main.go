@@ -49,8 +49,9 @@ func withMiddleware(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 type Question struct {
-	ID       string `json:"id"`
-	Question string `json:"question"`
+	ID       string   `json:"id"`
+	Question string   `json:"question"`
+	Options  []string `json:"options"` // Required field for multiple choice questions
 }
 
 type Answer struct {
@@ -81,22 +82,22 @@ type CreateUserResponse struct {
 }
 
 var questions = []Question{
-	{ID: "CRD0001", Question: "¿Cuál es el mayor monto total desembolsado en la historia de créditos de Nequi?"},
-	{ID: "CRD0002", Question: "¿Cuál es el total de monto desembolsado en la historia de Nequi?"},
-	{ID: "CRD0003", Question: "¿Cuántos Nequis con ocupación registrada han tenido un crédito siendo estudiantes?"},
-	{ID: "CRD0004", Question: "¿Qué segmento ha tenido 58.627 desembolsos en la historia?"},
-	{ID: "CRD0005", Question: "¿Cuál es el monto promedio desembolsado en Préstamo Propulsor por parte de los Nequis?"},
-	{ID: "CRD0006", Question: "¿Cuántas personas de 50 años han tenido desembolsos?"},
-	{ID: "CRD0007", Question: "¿Cuánto se espera desembolsar en montos para diciembre de 2025 según previsión?"},
-	{ID: "CRD0008", Question: "¿Cuántas personas con ciudad de nacimiento BARRANQUILLA ATLÁNTICO han tenido un desembolso?"},
-	{ID: "CRD0009", Question: "¿Cuál es el total de créditos cancelados del tipo Bajo Monto?"},
-	{ID: "CRD0010", Question: "¿Cuál fue la variación porcentual en el valor desembolsado entre abril y marzo 2025?"},
-	{ID: "CRD0011", Question: "¿Cuál es el promedio de variación porcentual de desembolsos en todo el año 2025?"},
-	{ID: "CRD0012", Question: "¿Cuántos clientes han tenido un desembolso con Nequi?"},
-	{ID: "CRD0013", Question: "¿Qué edad ha tenido la mayor cantidad de personas con desembolsos?"},
-	{ID: "CRD0014", Question: "¿Cuánto ha sido el total desembolsado por el segmento Camellador en Préstamo Propulsor?"},
-	{ID: "CRD0015", Question: "¿Cuántos créditos han sido suspendidos para el segmento Dinamizador?"},
-	{ID: "CRD0016", Question: "¿Cuál ha sido el total histórico de desembolsos del segmento Joven?"},
+	{ID: "CRD0001", Question: "¿Cuál es el mayor monto total desembolsado en la historia de créditos de Nequi?", Options: []string{"220.317.663.560", "1.500.000.000.000", "300.000.000.000", "500.000.000.000"}},
+	{ID: "CRD0002", Question: "¿Cuál es el total de monto desembolsado en la historia de Nequi?", Options: []string{"1.000.000.000.000", "2.000.000.000.000", "3.000.000.000.000", "4.000.000.000.000"}},
+	{ID: "CRD0003", Question: "¿Cuántos Nequis con ocupación registrada han tenido un crédito siendo estudiantes?", Options: []string{"100.000", "200.000", "300.000", "400.000"}},
+	{ID: "CRD0004", Question: "¿Qué segmento ha tenido 58.627 desembolsos en la historia?", Options: []string{"Estudiantes", "Emprendedores", "Jubilados", "Trabajadores"}},
+	{ID: "CRD0005", Question: "¿Cuál es el monto promedio desembolsado en Préstamo Propulsor por parte de los Nequis?", Options: []string{"1.000.000", "2.000.000", "3.000.000", "4.000.000"}},
+	{ID: "CRD0006", Question: "¿Cuántas personas de 50 años han tenido desembolsos?", Options: []string{"10.000", "20.000", "30.000", "40.000"}},
+	{ID: "CRD0007", Question: "¿Cuánto se espera desembolsar en montos para diciembre de 2025 según previsión?", Options: []string{"100.000.000.000", "200.000.000.000", "300.000.000.000", "400.000.000.000"}},
+	{ID: "CRD0008", Question: "¿Cuántas personas con ciudad de nacimiento BARRANQUILLA ATLÁNTICO han tenido un desembolso?", Options: []string{"5.000", "10.000", "15.000", "20.000"}},
+	{ID: "CRD0009", Question: "¿Cuál es el total de créditos cancelados del tipo Bajo Monto?", Options: []string{"1.000", "2.000", "3.000", "4.000"}},
+	{ID: "CRD0010", Question: "¿Cuál fue la variación porcentual en el valor desembolsado entre abril y marzo 2025?", Options: []string{"5%", "10%", "15%", "20%"}},
+	{ID: "CRD0011", Question: "¿Cuál es el promedio de variación porcentual de desembolsos en todo el año 2025?", Options: []string{"1%", "2%", "3%", "4%"}},
+	{ID: "CRD0012", Question: "¿Cuántos clientes han tenido un desembolso con Nequi?", Options: []string{"100.000", "200.000", "300.000", "400.000"}},
+	{ID: "CRD0013", Question: "¿Qué edad ha tenido la mayor cantidad de personas con desembolsos?", Options: []string{"18", "25", "30", "40"}},
+	{ID: "CRD0014", Question: "¿Cuánto ha sido el total desembolsado por el segmento Camellador en Préstamo Propulsor?", Options: []string{"100.000.000", "200.000.000", "300.000.000", "400.000.000"}},
+	{ID: "CRD0015", Question: "¿Cuántos créditos han sido suspendidos para el segmento Dinamizador?", Options: []string{"1.000", "2.000", "3.000", "4.000"}},
+	{ID: "CRD0016", Question: "¿Cuál ha sido el total histórico de desembolsos del segmento Joven?", Options: []string{"1.000.000.000", "2.000.000.000", "3.000.000.000", "4.000.000.000"}},
 }
 
 var answers = []Answer{

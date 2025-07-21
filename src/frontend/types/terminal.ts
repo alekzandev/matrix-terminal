@@ -30,4 +30,10 @@ export interface AIResponse {
   timestamp: number;
 }
 
+export interface Question {
+  id: string;
+  question: string;
+  options?: string[];
+}
+
 export type TerminalMessage = UserMessage | AIResponse;

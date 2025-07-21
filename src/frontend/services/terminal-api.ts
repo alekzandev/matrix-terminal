@@ -1,4 +1,4 @@
-import { UserMessage, AIResponse, TerminalMessage } from '../types/terminal.js';
+import { UserMessage, AIResponse, TerminalMessage, Question } from '../types/terminal.js';
 
 // Interface for user creation API
 export interface CreateUserRequest {
@@ -151,7 +151,7 @@ export class TerminalAPI {
   }
 
   // Get question by ID from Go API
-  async getQuestion(questionId: string): Promise<{ id: string; question: string }> {
+  async getQuestion(questionId: string): Promise<Question> {
     try {
       const response = await fetch(`${this.goApiUrl}/question?id=${questionId}`);
       
