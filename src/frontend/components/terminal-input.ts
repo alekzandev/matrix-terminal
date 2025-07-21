@@ -164,10 +164,11 @@ export class TerminalInput extends LitElement {
   private handleSubmit(): void {
     const input = this.currentInput.trim();
     
-    if (!input) return;
-
-    // Add to command history
-    if (this.commandHistory[this.commandHistory.length - 1] !== input) {
+    // Always dispatch the event, even for empty inputs
+    // The parent component will decide how to handle it
+    
+    // Add to command history only if input is not empty
+    if (input && this.commandHistory[this.commandHistory.length - 1] !== input) {
       this.commandHistory.push(input);
       
       // Keep only last 50 commands
@@ -181,7 +182,7 @@ export class TerminalInput extends LitElement {
     this.historyIndex = -1;
     this.hideHistory();
 
-    // Dispatch event to parent
+    // Dispatch event to parent (always dispatch, even for empty input)
     this.dispatchEvent(new CustomEvent('user-input', {
       detail: input,
       bubbles: true,

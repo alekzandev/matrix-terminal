@@ -194,38 +194,167 @@ export class MatrixTerminal extends LitElement {
       margin: 15px 0;
     }
 
-    .welcome-logo {
-      font-size: 32px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-      animation: logo-glow 3s ease-in-out infinite;
+    .roulette-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #00ff41;
+      padding: 20px;
+    }
+
+    .roulette-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 30px 0;
+    }
+
+    .roulette-wheel {
+      width: 300px;
+      height: 300px;
+      border: 5px solid #00ff41;
+      border-radius: 50%;
+      position: relative;
+      background: radial-gradient(circle, rgba(0, 255, 65, 0.2) 0%, rgba(0, 255, 65, 0.05) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+      overflow: hidden;
+    }
+
+    .roulette-spinning {
+      animation: spin 0.2s linear infinite;
+    }
+
+    .roulette-slowing {
+      animation: spin-slow 2s ease-out forwards;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spin-slow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(1080deg); }
+    }
+
+    .roulette-pointer {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 30px;
+      color: #00ff41;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+      z-index: 10;
+    }
+
+    .roulette-options {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .roulette-option {
+      position: absolute;
+      width: 80px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #00ff41;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid #00ff41;
+      border-radius: 20px;
+      transform-origin: center center;
+    }
+
+    .roulette-option:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg) translateY(-120px) rotate(0deg); }
+    .roulette-option:nth-child(2) { transform: translate(-50%, -50%) rotate(45deg) translateY(-120px) rotate(-45deg); }
+    .roulette-option:nth-child(3) { transform: translate(-50%, -50%) rotate(90deg) translateY(-120px) rotate(-90deg); }
+    .roulette-option:nth-child(4) { transform: translate(-50%, -50%) rotate(135deg) translateY(-120px) rotate(-135deg); }
+    .roulette-option:nth-child(5) { transform: translate(-50%, -50%) rotate(180deg) translateY(-120px) rotate(-180deg); }
+    .roulette-option:nth-child(6) { transform: translate(-50%, -50%) rotate(225deg) translateY(-120px) rotate(-225deg); }
+    .roulette-option:nth-child(7) { transform: translate(-50%, -50%) rotate(270deg) translateY(-120px) rotate(-270deg); }
+    .roulette-option:nth-child(8) { transform: translate(-50%, -50%) rotate(315deg) translateY(-120px) rotate(-315deg); }
+
+    .roulette-result {
+      margin-top: 30px;
+      padding: 20px;
+      border: 2px solid #00ff41;
+      border-radius: 10px;
+      background: rgba(0, 255, 65, 0.1);
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+      animation: result-appear 0.5s ease-out;
+    }
+
+    .result-announcement {
+      font-size: 24px;
+      color: #00ff41;
+      text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+      margin-bottom: 10px;
+      animation: text-glow 2s ease-in-out infinite;
+    }
+
+    .roulette-spinning-text {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #00ff41;
+      text-shadow: 0 0 5px rgba(0, 255, 65, 0.6);
+    }
+
+    .loading-dots {
+      display: inline-block;
+      margin-left: 5px;
+    }
+
+    .loading-dots span {
+      animation: loading-dots 1.4s ease-in-out infinite both;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes loading-dots {
+      0%, 80%, 100% { 
+        opacity: 0.3;
+        transform: scale(1);
+      }
+      40% { 
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes result-appear {
+      0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes text-glow {
+      0%, 100% {
+        text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+      }
+      50% {
+        text-shadow: 0 0 20px rgba(0, 255, 65, 1), 0 0 30px rgba(0, 255, 65, 0.6);
+      }
     }
     
-    .timeout-logo {
-      font-size: 32px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
-      animation: logo-glow-timeout 3s ease-in-out infinite;
-    }
-
-    .failed-logo {
-      font-size: 32px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
-      animation: logo-glow-failed 3s ease-in-out infinite;
-    }
-
-    .winner-logo {
-      font-size: 32px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-      animation: logo-glow-winner 3s ease-in-out infinite;
-    }
-
     @keyframes logo-glow {
       0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
       50% { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8), 0 0 30px rgba(0, 255, 65, 0.3); }
@@ -386,6 +515,18 @@ export class MatrixTerminal extends LitElement {
 
   @state()
   private evaluationResults: any = null;
+
+  @state()
+  private showRoulette: boolean = false;
+
+  @state()
+  private rouletteSpinning: boolean = false;
+
+  @state()
+  private rouletteResult: string = '';
+
+  @state()
+  private showRouletteResult: boolean = false;
 
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   
@@ -566,8 +707,22 @@ export class MatrixTerminal extends LitElement {
 
   private async handleUserInput(event: CustomEvent<string>): Promise<void> {
     const input = event.detail.trim();
-    // console.log('User input received:', input, 'isCollectingEmail:', this.isCollectingEmail); // Debug log
+    console.log('=== USER INPUT DEBUG ===');
+    console.log('Raw input:', event.detail);
+    console.log('Trimmed input:', input);
+    console.log('quizPassed:', this.quizPassed);
+    console.log('showRoulette:', this.showRoulette);
+    console.log('isCollectingEmail:', this.isCollectingEmail);
+    console.log('isAnsweringQuestions:', this.isAnsweringQuestions);
+    console.log('========================');
     
+    // Check if we're on the winner screen and user pressed Enter to start roulette
+    if (this.quizPassed && !this.showRoulette && input === '') {
+      console.log('🎰 TRIGGERING ROULETTE!');
+      this.startRoulette();
+      return;
+    }
+
     if (!input) return;
 
     // Add user input to terminal
@@ -859,24 +1014,54 @@ export class MatrixTerminal extends LitElement {
     }, 1000);
   }
 
-  private formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  private startRoulette(): void {
+    console.log('🎰 startRoulette() called!');
+    console.log('Setting showRoulette to true...');
+    this.showRoulette = true;
+    this.rouletteSpinning = true;
+    this.showRouletteResult = false;
+    this.requestUpdate();
+    console.log('State updated:', {
+      showRoulette: this.showRoulette,
+      rouletteSpinning: this.rouletteSpinning,
+      showRouletteResult: this.showRouletteResult
+    });
+    
+    // Spin for 4 seconds, then show result
+    setTimeout(() => {
+      console.log('🎰 Roulette spinning completed, determining result...');
+      this.rouletteSpinning = false;
+      this.determineRouletteResult();
+      this.showRouletteResult = true;
+      this.requestUpdate();
+      console.log('Final result:', this.rouletteResult);
+    }, 4000);
   }
 
-  private renderCountdownTimer(): import("lit").TemplateResult {
-    const minutes = Math.floor(this.countdownTime / 60);
-    const seconds = this.countdownTime % 60;
-    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-    const isCritical = this.countdownTime < this.totalCountdownTime * 0.2;
-
-    return html`
-      <div class="countdown-timer ${isCritical ? 'critical blink' : ''}">
-        ${formattedTime}
-      </div>
-    `;
+  private determineRouletteResult(): void {
+    const prizes = [
+      '🎁 ¡Ganaste una camiseta exclusiva!',
+      '🧢 ¡Ganaste una gorra edición limitada!', 
+      '💻 ¡Ganaste stickers de Delfos!',
+      '☕ ¡Ganaste una taza térmica!',
+      '🎯 ¡Solo gloria esta vez, pero eres un crack!',
+      '🎮 ¡Ganaste un mousepad gaming!',
+      '📱 ¡Ganaste un pop socket!',
+      '✨ ¡Solo honor esta vez, sigue así!'
+    ];
+    
+    // 60% chance of winning actual merchandise
+    const winsMerch = Math.random() < 0.6;
+    
+    if (winsMerch) {
+      // Select random physical prize (first 6 items)
+      const merchPrizes = prizes.slice(0, 6);
+      this.rouletteResult = merchPrizes[Math.floor(Math.random() * merchPrizes.length)];
+    } else {
+      // Select one of the "glory only" prizes
+      const gloryPrizes = prizes.slice(6);
+      this.rouletteResult = gloryPrizes[Math.floor(Math.random() * gloryPrizes.length)];
+    }
   }
 
   private collectUserEmail(): void {
@@ -925,6 +1110,26 @@ export class MatrixTerminal extends LitElement {
   // Method to get the saved email (for debugging/testing)
   public getUserEmail(): string {
     return this.userEmail;
+  }
+
+  private formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  private renderCountdownTimer(): import("lit").TemplateResult {
+    const minutes = Math.floor(this.countdownTime / 60);
+    const seconds = this.countdownTime % 60;
+    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    const isCritical = this.countdownTime < this.totalCountdownTime * 0.2;
+
+    return html`
+      <div class="countdown-timer ${isCritical ? 'critical blink' : ''}">
+        ${formattedTime}
+      </div>
+    `;
   }
 
   render() {
@@ -986,6 +1191,62 @@ export class MatrixTerminal extends LitElement {
       `;
     }
 
+    if (this.showRoulette) {
+      return html`
+        <div class="terminal-container screen-flicker">
+          <div class="scanlines"></div>
+          <div class="matrix-background"></div>
+          
+          <div class="roulette-screen">
+            <div class="winner-logo">🎰 ¡RULETA DE PREMIOS!</div>
+            <div class="welcome-message">
+              ¡Hora de la verdad! Veamos qué premio te tocó...
+            </div>
+            
+            <div class="roulette-container">
+              <div class="roulette-wheel ${this.rouletteSpinning ? 'roulette-spinning' : ''}">
+                <div class="roulette-options">
+                  <div class="roulette-option">🎁 Camiseta</div>
+                  <div class="roulette-option">🧢 Gorra</div>
+                  <div class="roulette-option">💻 Stickers</div>
+                  <div class="roulette-option">☕ Taza</div>
+                  <div class="roulette-option">🎯 Gloria</div>
+                  <div class="roulette-option">🎮 Mousepad</div>
+                  <div class="roulette-option">📱 Pop Socket</div>
+                  <div class="roulette-option">✨ Honor</div>
+                </div>
+              </div>
+              <div class="roulette-pointer">▼</div>
+            </div>
+            
+            ${this.showRouletteResult ? html`
+              <div class="roulette-result">
+                <div class="result-announcement">
+                  ${this.rouletteResult}
+                </div>
+                <div class="welcome-message" style="margin-top: 20px;">
+                  ${this.rouletteResult.includes('Gloria') || this.rouletteResult.includes('honor') 
+                    ? '¡Sigue practicando y mejorando tus skills analíticos!' 
+                    : '¡Increíble! Nos contactaremos contigo para entregarte tu premio 🎉'}
+                </div>
+                <div class="press-enter" style="margin-top: 30px;">
+                  <span>Pasa con el Staff para reclamar tu premio</span>
+                  <div class="cursor"></div>
+                </div>
+              </div>
+            ` : html`
+              <div class="roulette-spinning-text">
+                <span>Girando la ruleta...</span>
+                <div class="loading-dots">
+                  <span>.</span><span>.</span><span>.</span>
+                </div>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
     if (this.quizPassed && this.evaluationResults) {
       return html`
         <div class="terminal-container screen-flicker">
@@ -1020,9 +1281,17 @@ export class MatrixTerminal extends LitElement {
             </div>
             
             <div class="press-enter" style="margin-top: 30px;">
-              <span>Presiona Enter para buscar tu premio</span>
+              <span>Presiona Enter para participar por Merch</span>
               <div class="cursor"></div>
             </div>
+          </div>
+          
+          <!-- Add terminal input so user can press Enter -->
+          <div style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
+            <terminal-input 
+              .disabled=${false}
+              @user-input=${this.handleUserInput}>
+            </terminal-input>
           </div>
         </div>
       `;
