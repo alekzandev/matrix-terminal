@@ -332,7 +332,7 @@ export class MatrixTerminal extends LitElement {
       ...this.terminalState,
       connected: true
     };
-    console.log('Switched to terminal view, showWelcome:', this.showWelcome); // Debug log
+    // console.log('Switched to terminal view, showWelcome:', this.showWelcome); // Debug log
     this.requestUpdate();
     
     // Add a small delay to ensure the UI transition completes
@@ -365,7 +365,7 @@ export class MatrixTerminal extends LitElement {
   }
 
   private addSystemMessage(content: string): void {
-    console.log('addSystemMessage called with content:', content); // Debug log
+    // console.log('addSystemMessage called with content:', content); // Debug log
     const line: TerminalLine = {
       id: this.generateLineId(),
       content,
@@ -373,15 +373,15 @@ export class MatrixTerminal extends LitElement {
       timestamp: Date.now()
     };
     
-    console.log('Created line object:', line); // Debug log
+    // console.log('Created line object:', line); // Debug log
     // Create a new array to trigger Lit's reactivity
     this.terminalState = {
       ...this.terminalState,
       lines: [...this.terminalState.lines, line]
     };
-    console.log('Total lines after push:', this.terminalState.lines.length); // Debug log
+    // console.log('Total lines after push:', this.terminalState.lines.length); // Debug log
     this.requestUpdate();
-    console.log('requestUpdate called'); // Debug log
+    // console.log('requestUpdate called'); // Debug log
   }
 
   private addPromptMessage(content: string): void {
@@ -455,7 +455,7 @@ export class MatrixTerminal extends LitElement {
 
   private handleUserInput(event: CustomEvent<string>): void {
     const input = event.detail.trim();
-    console.log('User input received:', input, 'isCollectingEmail:', this.isCollectingEmail); // Debug log
+    // console.log('User input received:', input, 'isCollectingEmail:', this.isCollectingEmail); // Debug log
     
     if (!input) return;
 
@@ -464,17 +464,17 @@ export class MatrixTerminal extends LitElement {
     
     // Check if we're collecting email
     if (this.isCollectingEmail) {
-      console.log('Processing email input:', input); // Debug log
+      // console.log('Processing email input:', input); // Debug log
       // Simple email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (emailRegex.test(input)) {
-        console.log('Email validation passed'); // Debug log
+        // console.log('Email validation passed'); // Debug log
         this.userEmail = input;
         this.isCollectingEmail = false;
         this.proceedAfterEmail();
-        console.log('Email saved:', this.userEmail); // Debug log
+        // console.log('Email saved:', this.userEmail); // Debug log
       } else {
-        console.log('Email validation failed'); // Debug log
+        // console.log('Email validation failed'); // Debug log
         this.addSystemMessage('Por favor, ingresa un correo electrónico válido:');
       }
       return;
@@ -593,32 +593,31 @@ export class MatrixTerminal extends LitElement {
   }
 
   private collectUserEmail(): void {
-    console.log('collectUserEmail called'); // Debug log
+    // console.log('collectUserEmail called'); // Debug log
     this.addPromptMessage('Ingresa tu correo electrónico para continuar...');
     this.isCollectingEmail = true;
-    console.log('isCollectingEmail set to true'); // Debug log
+    // console.log('isCollectingEmail set to true'); // Debug log
     this.requestUpdate();
-    console.log('requestUpdate called from collectUserEmail'); // Debug log
+    // console.log('requestUpdate called from collectUserEmail'); // Debug log
   }
 
   private proceedAfterEmail(): void {
-    console.log('proceedAfterEmail called with email:', this.userEmail); // Debug log
-    console.log('About to add confirmation messages'); // Debug log
+    // console.log('proceedAfterEmail called with email:', this.userEmail); // Debug log
+    // console.log('About to add confirmation messages'); // Debug log
     
     try {
       this.addSystemMessage(`Correo registrado: ${this.userEmail}`);
-      console.log('First message added successfully'); // Debug log
+      // console.log('First message added successfully'); // Debug log
       
       this.addSystemMessage('Continuando con el sistema...');
-      console.log('Second message added successfully'); // Debug log
+      // console.log('Second message added successfully'); // Debug log
       
       // Show the main menu after a delay
       setTimeout(() => {
-        console.log('Adding main menu messages'); // Debug log
-        this.addSystemMessage('Bienvenido al Perfilador Analítico de Delfos.');
-        this.addSystemMessage('Elige tu perfil de investigador:');
-        this.addSystemMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
-        console.log('Main menu messages added'); // Debug log
+        // console.log('Adding main menu messages'); // Debug log
+        this.addPromptMessage('Elige tu perfil de investigador:');
+        this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
+        // console.log('Main menu messages added'); // Debug log
       }, 1500);
       
       // Continue with normal terminal flow
@@ -627,7 +626,7 @@ export class MatrixTerminal extends LitElement {
         isWaitingForResponse: false
       };
       this.requestUpdate();
-      console.log('proceedAfterEmail completed successfully'); // Debug log
+      // console.log('proceedAfterEmail completed successfully'); // Debug log
       
     } catch (error) {
       console.error('Error in proceedAfterEmail:', error); // Debug log
@@ -640,20 +639,20 @@ export class MatrixTerminal extends LitElement {
   }
 
   render() {
-    console.log('=== RENDER CALLED ===');
-    console.log('showWelcome:', this.showWelcome);
-    console.log('timeOver:', this.timeOver);
-    console.log('terminalState.lines length:', this.terminalState.lines.length);
-    console.log('terminalState.connected:', this.terminalState.connected);
-    console.log('isCollectingEmail:', this.isCollectingEmail);
-    console.log('userEmail:', this.userEmail);
-    console.log('Lines:', this.terminalState.lines.map(line => ({ type: line.type, content: line.content.substring(0, 50) })));
-    console.log('==================');
+    // console.log('=== RENDER CALLED ===');
+    // console.log('showWelcome:', this.showWelcome);
+    // console.log('timeOver:', this.timeOver);
+    // console.log('terminalState.lines length:', this.terminalState.lines.length);
+    // console.log('terminalState.connected:', this.terminalState.connected);
+    // console.log('isCollectingEmail:', this.isCollectingEmail);
+    // console.log('userEmail:', this.userEmail);
+    // console.log('Lines:', this.terminalState.lines.map(line => ({ type: line.type, content: line.content.substring(0, 50) })));
+    // console.log('==================');
 
     const isTimeCritical = this.countdownTime < 0.2 * this.totalCountdownTime; // 20% of total time
 
     if (this.timeOver) {
-      console.log('Rendering timeout screen');
+      // console.log('Rendering timeout screen');
       return html`
         <div class="terminal-container screen-flicker">
           <div class="scanlines"></div>
@@ -673,7 +672,7 @@ export class MatrixTerminal extends LitElement {
     }
 
     if (this.showWelcome) {
-      console.log('Rendering welcome screen');
+      // console.log('Rendering welcome screen');
       return html`
         <div class="terminal-container screen-flicker">
           <div class="scanlines"></div>
@@ -719,7 +718,7 @@ export class MatrixTerminal extends LitElement {
       `;
     }
 
-    console.log('Rendering main terminal interface');
+    // console.log('Rendering main terminal interface');
     return html`
       <div class="terminal-container screen-flicker">
         <div class="scanlines"></div>

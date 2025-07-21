@@ -170,8 +170,8 @@ export class TerminalOutput extends LitElement {
   }
 
   render() {
-    console.log('terminal-output render called with lines:', this.lines.length);
-    console.log('lines content:', this.lines.map(line => ({ type: line.type, content: line.content.substring(0, 30) })));
+    // console.log('terminal-output render called with lines:', this.lines.length);
+    // console.log('lines content:', this.lines.map(line => ({ type: line.type, content: line.content.substring(0, 30) })));
     
     return html`
       ${this.lines.map(line => this.renderLine(line))}
