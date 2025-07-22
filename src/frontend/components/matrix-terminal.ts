@@ -975,15 +975,7 @@ export class MatrixTerminal extends LitElement {
           // User passed the quiz - show winner screen
           this.evaluationResults = evaluation;
           this.stopCountdown(); // Stop countdown when quiz is passed
-          
-          // Increment winner count
-          try {
-            const winnerResponse = await this.api.incrementWinnerCount(this.userEmail, this.sessionId);
-            this.addSystemMessage(`🏆 ¡Eres el ganador #${winnerResponse.winnerCount}!`);
-          } catch (error) {
-            console.error('Error incrementing winner count:', error);
-            // Don't show error to user, just log it
-          }
+          this.addSystemMessage('🏆 ¡Felicidades! Has pasado el quiz.');
           
           setTimeout(() => {
             this.quizPassed = true;
@@ -1091,17 +1083,17 @@ export class MatrixTerminal extends LitElement {
     });
     
     // Spin for 4 seconds, then show result
-    setTimeout(() => {
+    setTimeout(async () => {
       console.log('🎰 Roulette spinning completed, determining result...');
       this.rouletteSpinning = false;
-      this.determineRouletteResult();
+      await this.determineRouletteResult();
       this.showRouletteResult = true;
       this.requestUpdate();
       console.log('Final result:', this.rouletteResult);
     }, 4000);
   }
 
-  private determineRouletteResult(): void {
+  private async determineRouletteResult(): Promise<void> {
     // All prizes are displayed visually in the roulette wheel
     const allPrizes = [
       '🎁 ¡Ganaste una camiseta exclusiva!',
@@ -1114,16 +1106,40 @@ export class MatrixTerminal extends LitElement {
       '✨ ¡Solo honor esta vez, sigue así!'
     ];
     
-    // But actually only select between these two prizes:
-    // 70% chance for honor, 30% chance for termo
-    const random = Math.random();
-    
-    if (random < 0.7) {
-      // 70% chance for honor
+    try {
+      // First check the current winner count
+      const winnerCountResponse = await this.api.getWinnerCount();
+      const currentWinnerCount = winnerCountResponse.winnerCount;
+      
+      // If more than 40 winners, only give honor
+      if (currentWinnerCount > 40) {
+        this.rouletteResult = '✨ ¡Solo honor esta vez, sigue así!';
+        return;
+      }
+      
+      // Otherwise, normal logic: 70% chance for honor, 30% chance for termo
+      const random = Math.random();
+      
+      if (random < 0.7) {
+        // 70% chance for honor
+        this.rouletteResult = '✨ ¡Solo honor esta vez, sigue así!';
+      } else {
+        // 30% chance for termo - increment winner count
+        this.rouletteResult = '☕ ¡Ganaste un termo!';
+        
+        // Increment winner count for physical prize
+        try {
+          const winnerResponse = await this.api.incrementWinnerCount(this.userEmail, this.sessionId);
+          // Update the result to include winner number
+          this.rouletteResult = `☕ ¡Ganaste un termo! (Ganador #${winnerResponse.winnerCount})`;
+        } catch (error) {
+          // Don't show error to user, just log it
+        }
+      }
+      
+    } catch (error) {
+      // Fallback to honor only if API call fails
       this.rouletteResult = '✨ ¡Solo honor esta vez, sigue así!';
-    } else {
-      // 30% chance for termo
-      this.rouletteResult = '☕ ¡Ganaste un termo!';
     }
   }
 
