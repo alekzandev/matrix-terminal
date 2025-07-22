@@ -803,7 +803,7 @@ export class MatrixTerminal extends LitElement {
         this.isAnsweringQuestions = true;
         
         this.addSystemMessage(`Perfil seleccionado: CRÉDITOS`);
-        this.addSystemMessage(`Preguntas asignadas: ${result.questionIds.join(', ')}`);
+        // this.addSystemMessage(`Preguntas asignadas: ${result.questionIds.join(', ')}`);
         this.addPromptMessage('Iniciando evaluación. Responde con la letra correcta (a, b, c, d):');
         
         // Load first question
