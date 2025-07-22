@@ -560,6 +560,9 @@ export class MatrixTerminal extends LitElement {
   @state()
   private showRouletteResult: boolean = false;
 
+  @state()
+  private selectedProfile: string = '';
+
   private matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   
   private api: TerminalAPI;
@@ -807,14 +810,18 @@ export class MatrixTerminal extends LitElement {
         // Start countdown immediately when profile is selected
         this.startCountdown();
         
-        // Get random questions from API
-        const questionIds = await this.api.getRandomQuestions();
-        this.currentQuestions = questionIds;
+        // Set selected profile
+        this.selectedProfile = "1";
+        
+        // Get random questions from API for Créditos profile
+        const result = await this.api.getRandomQuestions("1");
+        this.currentQuestions = result.questionIds;
         this.currentQuestionIndex = 0;
         this.userAnswers = [];
         this.isAnsweringQuestions = true;
         
-        this.addSystemMessage(`Preguntas asignadas: ${questionIds.join(', ')}`);
+        this.addSystemMessage(`Perfil seleccionado: CRÉDITOS`);
+        this.addSystemMessage(`Preguntas asignadas: ${result.questionIds.join(', ')}`);
         this.addPromptMessage('Iniciando evaluación. Responde con la letra correcta (a, b, c, d):');
         
         // Load first question
@@ -823,9 +830,44 @@ export class MatrixTerminal extends LitElement {
       } else if (input === '2') {
         // Start countdown immediately when profile is selected
         this.startCountdown();
+        
+        // Set selected profile
+        this.selectedProfile = "2";
+        
+        // Get random questions from API for Servicio profile
+        const result = await this.api.getRandomQuestions("2");
+        this.currentQuestions = result.questionIds;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = [];
+        this.isAnsweringQuestions = true;
+        
+        this.addSystemMessage(`Perfil seleccionado: SERVICIO`);
+        this.addSystemMessage(`Preguntas asignadas: ${result.questionIds.join(', ')}`);
+        this.addPromptMessage('Iniciando evaluación. Responde con la letra correcta (a, b, c, d):');
+        
+        // Load first question
+        await this.loadCurrentQuestion();
+        
       } else if (input === '3') {
         // Start countdown immediately when profile is selected
         this.startCountdown();
+        
+        // Set selected profile
+        this.selectedProfile = "3";
+        
+        // Get random questions from API for Expansion profile
+        const result = await this.api.getRandomQuestions("3");
+        this.currentQuestions = result.questionIds;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = [];
+        this.isAnsweringQuestions = true;
+        
+        this.addSystemMessage(`Perfil seleccionado: EXPANSIÓN`);
+        this.addSystemMessage(`Preguntas asignadas: ${result.questionIds.join(', ')}`);
+        this.addPromptMessage('Iniciando evaluación. Responde con la letra correcta (a, b, c, d):');
+        
+        // Load first question
+        await this.loadCurrentQuestion();
       } else if (input.toLowerCase() === 'clear') {
         this.terminalState = {
           ...this.terminalState,
@@ -862,7 +904,23 @@ export class MatrixTerminal extends LitElement {
       return;
     }
 
-    const questionId = `CRD${String(this.currentQuestions[this.currentQuestionIndex]).padStart(4, '0')}`;
+    // Generate question ID based on selected profile
+    let questionPrefix = 'CRD'; // Default to CRD
+    switch (this.selectedProfile) {
+      case "1":
+        questionPrefix = 'CRD';
+        break;
+      case "2":
+        questionPrefix = 'SRV';
+        break;
+      case "3":
+        questionPrefix = 'EXP';
+        break;
+      default:
+        questionPrefix = 'CRD';
+    }
+
+    const questionId = `${questionPrefix}${String(this.currentQuestions[this.currentQuestionIndex]).padStart(4, '0')}`;
     
     try {
       const question = await this.api.getQuestion(questionId);
@@ -961,8 +1019,23 @@ export class MatrixTerminal extends LitElement {
     this.addSystemMessage('🔄 Evaluando respuestas...');
     
     try {
-      // Format question IDs correctly (CRD0001, CRD0002, etc.)
-      const questionIds = this.currentQuestions.map(q => `CRD${String(q).padStart(4, '0')}`);
+      // Format question IDs correctly based on selected profile
+      let questionPrefix = 'CRD'; // Default to CRD
+      switch (this.selectedProfile) {
+        case "1":
+          questionPrefix = 'CRD';
+          break;
+        case "2":
+          questionPrefix = 'SRV';
+          break;
+        case "3":
+          questionPrefix = 'EXP';
+          break;
+        default:
+          questionPrefix = 'CRD';
+      }
+      
+      const questionIds = this.currentQuestions.map(q => `${questionPrefix}${String(q).padStart(4, '0')}`);
       const evaluation = await this.api.evaluateAnswers(questionIds, this.userAnswers);
       
       if (evaluation.status === 'success') {
@@ -1162,7 +1235,7 @@ export class MatrixTerminal extends LitElement {
       // Show the main menu after a delay
       setTimeout(() => {
         this.addPromptMessage('Elige tu perfil de investigador:');
-        this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
+        this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Expansión');
       }, 1500);
       
     } catch (error) {
@@ -1174,7 +1247,7 @@ export class MatrixTerminal extends LitElement {
       // Continue anyway with the menu
       setTimeout(() => {
         this.addPromptMessage('Elige tu perfil de investigador:');
-        this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Clientes');
+        this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Expansión');
       }, 1500);
     }
     

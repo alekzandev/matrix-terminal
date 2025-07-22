@@ -196,15 +196,25 @@ export class TerminalAPI {
   }
 
   // Get random question IDs from Go API
-  async getRandomQuestions(): Promise<number[]> {
+  async getRandomQuestions(profile: string = "1"): Promise<{profile: string, questionIds: number[]}> {
     try {
-      const response = await fetch(`${this.goApiUrl}/choose-questions`);
+      const response = await fetch(`${this.goApiUrl}/choose-questions?profile=${profile}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      
+      // Handle backward compatibility - if the response is just an array, convert it
+      if (Array.isArray(result)) {
+        return {
+          profile: "1",
+          questionIds: result
+        };
+      }
+      
+      return result;
     } catch (error) {
       console.error('Error fetching random questions:', error);
       throw error;

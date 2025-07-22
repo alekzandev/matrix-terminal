@@ -274,21 +274,46 @@ func getAnswerByQuestionID(w http.ResponseWriter, r *http.Request) {
 func getQuestionIDs(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 
+	// Get profile parameter from query string (default to "1" for CRD questions)
+	profile := r.URL.Query().Get("profile")
+	if profile == "" {
+		profile = "1" // Default to profile 1 (CRD questions)
+	}
+
 	// Create a map to track used numbers and ensure uniqueness
 	used := make(map[int]bool)
 	var numbers []int
+	var maxQuestions int
 
-	// Generate 8 unique random numbers between 1 and 16
+	// Determine the range of questions based on profile
+	switch profile {
+	case "1": // Créditos - CRD0001 to CRD0016
+		maxQuestions = 16
+	case "2": // Servicio - SRV0001 to SRV0016
+		maxQuestions = 16
+	case "3": // Expansión - EXP0001 to EXP0016
+		maxQuestions = 16
+	default:
+		maxQuestions = 16 // Default to CRD questions
+	}
+
+	// Generate 8 unique random numbers within the appropriate range
 	for len(numbers) < 8 {
-		num := rand.Intn(16) + 1 // Generate number between 1-16
+		num := rand.Intn(maxQuestions) + 1 // Generate number between 1-maxQuestions
 		if !used[num] {
 			used[num] = true
 			numbers = append(numbers, num)
 		}
 	}
 
+	// Create response with profile info
+	response := map[string]interface{}{
+		"profile":     profile,
+		"questionIds": numbers,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(numbers)
+	json.NewEncoder(w).Encode(response)
 }
 
 // createUser handles the creation of a new user file
