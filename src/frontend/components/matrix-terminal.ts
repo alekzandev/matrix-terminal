@@ -1102,28 +1102,28 @@ export class MatrixTerminal extends LitElement {
   }
 
   private determineRouletteResult(): void {
-    const prizes = [
+    // All prizes are displayed visually in the roulette wheel
+    const allPrizes = [
       '🎁 ¡Ganaste una camiseta exclusiva!',
       '🧢 ¡Ganaste una gorra edición limitada!', 
       '💻 ¡Ganaste stickers de Delfos!',
-      '☕ ¡Ganaste una taza térmica!',
+      '☕ ¡Ganaste un termo!',
       '🎯 ¡Solo gloria esta vez, pero eres un crack!',
       '🎮 ¡Ganaste un mousepad gaming!',
       '📱 ¡Ganaste un pop socket!',
       '✨ ¡Solo honor esta vez, sigue así!'
     ];
     
-    // 60% chance of winning actual merchandise
-    const winsMerch = Math.random() < 0.6;
+    // But actually only select between these two prizes:
+    // 70% chance for honor, 30% chance for termo
+    const random = Math.random();
     
-    if (winsMerch) {
-      // Select random physical prize (first 6 items)
-      const merchPrizes = prizes.slice(0, 6);
-      this.rouletteResult = merchPrizes[Math.floor(Math.random() * merchPrizes.length)];
+    if (random < 0.7) {
+      // 70% chance for honor
+      this.rouletteResult = '✨ ¡Solo honor esta vez, sigue así!';
     } else {
-      // Select one of the "glory only" prizes
-      const gloryPrizes = prizes.slice(6);
-      this.rouletteResult = gloryPrizes[Math.floor(Math.random() * gloryPrizes.length)];
+      // 30% chance for termo
+      this.rouletteResult = '☕ ¡Ganaste un termo!';
     }
   }
 
