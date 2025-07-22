@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -122,6 +123,20 @@ type EvaluateAnswersResponse struct {
 	IncorrectAnswers int                      `json:"incorrectAnswers"`
 	ScorePercentage  float64                  `json:"scorePercentage"`
 	Results          []AnswerEvaluationResult `json:"results"`
+}
+
+// WinnerCountRequest represents the request body for updating winner count
+type WinnerCountRequest struct {
+	UserEmail string `json:"userEmail,omitempty"` // Optional field to track which user won
+	SessionID string `json:"sessionId,omitempty"` // Optional field to track session
+}
+
+// WinnerCountResponse represents the response for winner count operations
+type WinnerCountResponse struct {
+	Status      string `json:"status"`
+	Message     string `json:"message"`
+	WinnerCount int    `json:"winnerCount"`
+	UpdatedAt   string `json:"updatedAt,omitempty"`
 }
 
 var questions = []Question{
@@ -433,6 +448,139 @@ func evaluateAnswers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// getWinnerCount handles getting the current winner count
+// It expects a GET request and returns the current winner count
+func getWinnerCount(w http.ResponseWriter, r *http.Request) {
+	// Only allow GET requests
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	count, err := readWinnerCount()
+	if err != nil {
+		log.Printf("Error reading winner count: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	response := WinnerCountResponse{
+		Status:      "success",
+		Message:     "Winner count retrieved successfully",
+		WinnerCount: count,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// incrementWinnerCount handles incrementing the winner count
+// It expects a POST request with JSON body containing optional userEmail and sessionId
+func incrementWinnerCount(w http.ResponseWriter, r *http.Request) {
+	// Only allow POST requests
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req WinnerCountRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("Error decoding winner count request: %v", err)
+		// Continue even if body is invalid, as userEmail and sessionId are optional
+	}
+
+	// Read current count
+	currentCount, err := readWinnerCount()
+	if err != nil {
+		log.Printf("Error reading current winner count: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Increment and write new count
+	newCount := currentCount + 1
+	err = writeWinnerCount(newCount)
+	if err != nil {
+		log.Printf("Error writing new winner count: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Log the winner information if provided
+	if req.UserEmail != "" {
+		log.Printf("🏆 New winner #%d: %s (Session: %s)", newCount, req.UserEmail, req.SessionID)
+	} else {
+		log.Printf("🏆 New winner #%d recorded", newCount)
+	}
+
+	response := WinnerCountResponse{
+		Status:      "success",
+		Message:     fmt.Sprintf("Winner count updated to %d", newCount),
+		WinnerCount: newCount,
+		UpdatedAt:   time.Now().Format(time.RFC3339),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// readWinnerCount reads the current winner count from file
+func readWinnerCount() (int, error) {
+	dataDir := "data"
+	filePath := filepath.Join(dataDir, "winner_count.txt")
+
+	// Create data directory if it doesn't exist
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		return 0, fmt.Errorf("failed to create data directory: %w", err)
+	}
+
+	// If file doesn't exist, return 0
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return 0, nil
+	}
+
+	// Read the file
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read winner count file: %w", err)
+	}
+
+	// Parse the count
+	countStr := strings.TrimSpace(string(content))
+	if countStr == "" {
+		return 0, nil
+	}
+
+	count, err := strconv.Atoi(countStr)
+	if err != nil {
+		return 0, fmt.Errorf("invalid winner count format in file: %s", countStr)
+	}
+
+	return count, nil
+}
+
+// writeWinnerCount writes the winner count to file
+func writeWinnerCount(count int) error {
+	dataDir := "data"
+	filePath := filepath.Join(dataDir, "winner_count.txt")
+
+	// Create data directory if it doesn't exist
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		return fmt.Errorf("failed to create data directory: %w", err)
+	}
+
+	// Write the count to file
+	content := fmt.Sprintf("%d", count)
+	err := os.WriteFile(filePath, []byte(content), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write winner count file: %w", err)
+	}
+
+	return nil
+}
+
 func main() {
 	http.HandleFunc("/question", withMiddleware(getQuestionByID))
 	http.HandleFunc("/answer", withMiddleware(getAnswerByQuestionID))
@@ -440,6 +588,8 @@ func main() {
 	http.HandleFunc("/user/create", withMiddleware(createUser))
 	http.HandleFunc("/user/update", withMiddleware(updateUser))
 	http.HandleFunc("/evaluate-answers", withMiddleware(evaluateAnswers))
+	http.HandleFunc("/winner/count", withMiddleware(getWinnerCount))
+	http.HandleFunc("/winner/increment", withMiddleware(incrementWinnerCount))
 
 	log.Println("🚀 Starting DelfosProfiler Go API Server on :8080")
 	log.Println("📡 CORS enabled for all origins")
@@ -450,6 +600,8 @@ func main() {
 	log.Println("  POST /user/create")
 	log.Println("  POST /user/update")
 	log.Println("  POST /evaluate-answers")
+	log.Println("  GET  /winner/count")
+	log.Println("  POST /winner/increment")
 	log.Println("🔧 Middleware: CORS + Logging enabled")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

@@ -17,6 +17,19 @@ export interface CreateUserResponse {
   };
 }
 
+// Interface for winner count API
+export interface WinnerCountRequest {
+  userEmail?: string;
+  sessionId?: string;
+}
+
+export interface WinnerCountResponse {
+  status: string;
+  message: string;
+  winnerCount: number;
+  updatedAt?: string;
+}
+
 export class TerminalAPI {
   private baseUrl: string;
   private goApiUrl: string;
@@ -382,5 +395,53 @@ export class TerminalAPI {
     ];
 
     return templates[Math.floor(Math.random() * templates.length)];
+  }
+
+  // Winner count API methods
+  async getWinnerCount(): Promise<WinnerCountResponse> {
+    try {
+      const response = await fetch(`${this.goApiUrl}/winner/count`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error getting winner count:', error);
+      throw error;
+    }
+  }
+
+  async incrementWinnerCount(userEmail?: string, sessionId?: string): Promise<WinnerCountResponse> {
+    try {
+      const requestBody: WinnerCountRequest = {};
+      if (userEmail) requestBody.userEmail = userEmail;
+      if (sessionId) requestBody.sessionId = sessionId;
+
+      const response = await fetch(`${this.goApiUrl}/winner/increment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error incrementing winner count:', error);
+      throw error;
+    }
   }
 }

@@ -507,7 +507,7 @@ export class MatrixTerminal extends LitElement {
   private bootSequence = false;
 
   @state()
-  private countdownTime: number = 60; // 5 minutes in seconds
+  private countdownTime: number = 300; // 5 minutes in seconds
 
   @state()
   private readonly totalCountdownTime: number = this.countdownTime; // Total time in seconds
@@ -975,6 +975,16 @@ export class MatrixTerminal extends LitElement {
           // User passed the quiz - show winner screen
           this.evaluationResults = evaluation;
           this.stopCountdown(); // Stop countdown when quiz is passed
+          
+          // Increment winner count
+          try {
+            const winnerResponse = await this.api.incrementWinnerCount(this.userEmail, this.sessionId);
+            this.addSystemMessage(`🏆 ¡Eres el ganador #${winnerResponse.winnerCount}!`);
+          } catch (error) {
+            console.error('Error incrementing winner count:', error);
+            // Don't show error to user, just log it
+          }
+          
           setTimeout(() => {
             this.quizPassed = true;
             this.requestUpdate();
