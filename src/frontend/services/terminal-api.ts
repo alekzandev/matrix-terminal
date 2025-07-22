@@ -37,11 +37,6 @@ export class TerminalAPI {
   constructor(baseUrl = 'http://localhost:8000', goApiUrl = 'http://localhost:8080') {
     this.baseUrl = baseUrl;
     this.goApiUrl = goApiUrl;
-    
-    // Log the API URLs for debugging
-    // console.log('🔧 TerminalAPI initialized with:');
-    // console.log('  Python API (AI):', this.baseUrl);
-    // console.log('  Go API (Backend):', this.goApiUrl);
   }
 
   async processInput(sessionId: string, input: string): Promise<AIResponse> {
@@ -74,8 +69,6 @@ export class TerminalAPI {
       };
 
     } catch (error) {
-      console.error('Error processing input:', error);
-      
       // Return fallback response
       return {
         type: 'ai_response',
@@ -97,7 +90,6 @@ export class TerminalAPI {
       return await response.json();
 
     } catch (error) {
-      console.error('Error getting session info:', error);
       return null;
     }
   }
@@ -114,7 +106,6 @@ export class TerminalAPI {
       return response.ok;
 
     } catch (error) {
-      console.error('Error resetting session:', error);
       return false;
     }
   }
@@ -124,7 +115,6 @@ export class TerminalAPI {
       const response = await fetch(`${this.baseUrl}/health`);
       return response.ok;
     } catch (error) {
-      console.error('Health check failed:', error);
       return false;
     }
   }
@@ -132,8 +122,6 @@ export class TerminalAPI {
   // Create user session file via Go API
   async createUser(userEmail: string, sessionId: string): Promise<CreateUserResponse> {
     try {
-      // console.log(`🔄 Creating user: ${userEmail} with session: ${sessionId}`);
-      
       const response = await fetch(`${this.goApiUrl}/user/create`, {
         method: 'POST',
         headers: {
@@ -145,20 +133,15 @@ export class TerminalAPI {
         })
       });
 
-      // console.log(`📡 API Response status: ${response.status}`);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`❌ API Error: ${response.status} - ${errorText}`);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const result = await response.json();
-      // console.log(`✅ User created successfully:`, result);
       return result;
 
     } catch (error) {
-      console.error('❌ Error creating user:', error);
       throw error;
     }
   }
@@ -174,7 +157,6 @@ export class TerminalAPI {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching question:', error);
       throw error;
     }
   }
@@ -190,7 +172,6 @@ export class TerminalAPI {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching answer:', error);
       throw error;
     }
   }
@@ -216,7 +197,6 @@ export class TerminalAPI {
       
       return result;
     } catch (error) {
-      console.error('Error fetching random questions:', error);
       throw error;
     }
   }
@@ -224,8 +204,6 @@ export class TerminalAPI {
   // Update user session file with questions and answers via Go API
   async updateUserWithAnswers(userEmail: string, sessionId: string, questionIds: number[], userAnswers: string[]): Promise<boolean> {
     try {
-      console.log(`🔄 Updating user file: ${userEmail} with questions and answers`);
-      
       const response = await fetch(`${this.goApiUrl}/user/update`, {
         method: 'POST',
         headers: {
@@ -239,20 +217,15 @@ export class TerminalAPI {
         })
       });
 
-      console.log(`📡 Update API Response status: ${response.status}`);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`❌ Update API Error: ${response.status} - ${errorText}`);
         return false;
       }
 
       const result = await response.json();
-      console.log(`✅ User file updated successfully:`, result);
       return true;
 
     } catch (error) {
-      console.error('❌ Error updating user file:', error);
       return false;
     }
   }
@@ -274,7 +247,6 @@ export class TerminalAPI {
       
       return await response.json();
     } catch (error) {
-      console.error('Error updating user:', error);
       throw error;
     }
   }
@@ -294,7 +266,6 @@ export class TerminalAPI {
       
       return await response.json();
     } catch (error) {
-      console.error('Error evaluating answers:', error);
       throw error;
     }
   }
@@ -424,7 +395,6 @@ export class TerminalAPI {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error getting winner count:', error);
       throw error;
     }
   }
@@ -450,7 +420,6 @@ export class TerminalAPI {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error incrementing winner count:', error);
       throw error;
     }
   }

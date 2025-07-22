@@ -16,7 +16,6 @@ export class WebSocketClient {
         this.ws = new WebSocket(this.url);
 
         this.ws.onopen = () => {
-          console.log('WebSocket connected');
           this.reconnectAttempts = 0;
           this.emit('connected');
           resolve();
@@ -27,18 +26,16 @@ export class WebSocketClient {
             const data = JSON.parse(event.data);
             this.emit('message', data);
           } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
+            // Handle invalid JSON gracefully
           }
         };
 
         this.ws.onclose = (event) => {
-          console.log('WebSocket disconnected:', event.code, event.reason);
           this.emit('disconnected');
           this.handleReconnect();
         };
 
         this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
           this.emit('error', error);
           reject(error);
         };
@@ -62,7 +59,6 @@ export class WebSocketClient {
         this.ws.send(JSON.stringify(data));
         return true;
       } catch (error) {
-        console.error('Error sending WebSocket message:', error);
         return false;
       }
     }
@@ -100,15 +96,13 @@ export class WebSocketClient {
   private handleReconnect(): void {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
       
       setTimeout(() => {
         this.connect().catch(error => {
-          console.error('Reconnection failed:', error);
+          // Handle reconnection failure
         });
       }, this.reconnectDelay * this.reconnectAttempts);
     } else {
-      console.error('Max reconnection attempts reached');
       this.emit('max-reconnect-attempts');
     }
   }

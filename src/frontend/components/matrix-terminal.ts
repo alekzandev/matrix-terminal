@@ -615,7 +615,6 @@ export class MatrixTerminal extends LitElement {
       ...this.terminalState,
       connected: true
     };
-    // console.log('Switched to terminal view, showWelcome:', this.showWelcome); // Debug log
     this.requestUpdate();
     
     // Add a small delay to ensure the UI transition completes
@@ -647,7 +646,6 @@ export class MatrixTerminal extends LitElement {
   }
 
   private addSystemMessage(content: string): void {
-    // console.log('addSystemMessage called with content:', content); // Debug log
     const line: TerminalLine = {
       id: this.generateLineId(),
       content,
@@ -655,15 +653,12 @@ export class MatrixTerminal extends LitElement {
       timestamp: Date.now()
     };
     
-    // console.log('Created line object:', line); // Debug log
     // Create a new array to trigger Lit's reactivity
     this.terminalState = {
       ...this.terminalState,
       lines: [...this.terminalState.lines, line]
     };
-    // console.log('Total lines after push:', this.terminalState.lines.length); // Debug log
     this.requestUpdate();
-    // console.log('requestUpdate called'); // Debug log
   }
 
   private addPromptMessage(content: string): void {
@@ -742,18 +737,9 @@ export class MatrixTerminal extends LitElement {
 
   private async handleUserInput(event: CustomEvent<string>): Promise<void> {
     const input = event.detail.trim();
-    console.log('=== USER INPUT DEBUG ===');
-    console.log('Raw input:', event.detail);
-    console.log('Trimmed input:', input);
-    console.log('quizPassed:', this.quizPassed);
-    console.log('showRoulette:', this.showRoulette);
-    console.log('isCollectingEmail:', this.isCollectingEmail);
-    console.log('isAnsweringQuestions:', this.isAnsweringQuestions);
-    console.log('========================');
     
     // Check if we're on the winner screen and user pressed Enter to start roulette
     if (this.quizPassed && !this.showRoulette && input === '') {
-      console.log('🎰 TRIGGERING ROULETTE!');
       this.startRoulette();
       return;
     }
@@ -765,17 +751,13 @@ export class MatrixTerminal extends LitElement {
     
     // Check if we're collecting email
     if (this.isCollectingEmail) {
-      // console.log('Processing email input:', input); // Debug log
       // Simple email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (emailRegex.test(input)) {
-        // console.log('Email validation passed'); // Debug log
         this.userEmail = input;
         this.isCollectingEmail = false;
         this.proceedAfterEmail();
-        // console.log('Email saved:', this.userEmail); // Debug log
       } else {
-        // console.log('Email validation failed'); // Debug log
         this.addSystemMessage('Por favor, ingresa un correo electrónico válido:');
       }
       return;
@@ -886,7 +868,6 @@ export class MatrixTerminal extends LitElement {
       }
       
     } catch (error) {
-      console.error('Error processing user input:', error);
       response = 'Error: Unable to process request. Please try again or contact support.';
     }
     
@@ -961,7 +942,6 @@ export class MatrixTerminal extends LitElement {
       await this.delay(100);
       
     } catch (error) {
-      console.error('Error loading question:', error);
       this.addSystemMessage(`Error cargando pregunta ${questionId}. Saltando a la siguiente...`);
       this.currentQuestionIndex++;
       await this.loadCurrentQuestion();
@@ -1011,7 +991,6 @@ export class MatrixTerminal extends LitElement {
         this.addSystemMessage('⚠️ Error al guardar resultados, pero se completó la evaluación.');
       }
     } catch (error) {
-      console.error('Error updating user file:', error);
       this.addSystemMessage('⚠️ Error al guardar resultados, pero se completó la evaluación.');
     }
     
@@ -1078,7 +1057,6 @@ export class MatrixTerminal extends LitElement {
       }
       
     } catch (error) {
-      console.error('Error evaluating answers:', error);
       this.addSystemMessage('⚠️ Error al evaluar respuestas. Mostrando resultado básico.');
       this.addOutput(`Respuestas completadas: ${this.userAnswers.length}/${this.currentQuestions.length}`);
     }
@@ -1143,26 +1121,17 @@ export class MatrixTerminal extends LitElement {
   }
 
   private startRoulette(): void {
-    console.log('🎰 startRoulette() called!');
-    console.log('Setting showRoulette to true...');
     this.showRoulette = true;
     this.rouletteSpinning = true;
     this.showRouletteResult = false;
     this.requestUpdate();
-    console.log('State updated:', {
-      showRoulette: this.showRoulette,
-      rouletteSpinning: this.rouletteSpinning,
-      showRouletteResult: this.showRouletteResult
-    });
     
     // Spin for 4 seconds, then show result
     setTimeout(async () => {
-      console.log('🎰 Roulette spinning completed, determining result...');
       this.rouletteSpinning = false;
       await this.determineRouletteResult();
       this.showRouletteResult = true;
       this.requestUpdate();
-      console.log('Final result:', this.rouletteResult);
     }, 4000);
   }
 
@@ -1217,12 +1186,9 @@ export class MatrixTerminal extends LitElement {
   }
 
   private collectUserEmail(): void {
-    // console.log('collectUserEmail called'); // Debug log
     this.addPromptMessage('Ingresa tu correo electrónico para continuar...');
     this.isCollectingEmail = true;
-    // console.log('isCollectingEmail set to true'); // Debug log
     this.requestUpdate();
-    // console.log('requestUpdate called from collectUserEmail'); // Debug log
   }
 
   private async proceedAfterEmail(): Promise<void> {
@@ -1240,7 +1206,6 @@ export class MatrixTerminal extends LitElement {
       
     } catch (error) {
       // Handle API or network errors
-      console.error('Error calling user creation API:', error);
       this.addSystemMessage('⚠ Error al crear sesión de usuario');
       this.addSystemMessage('Continuando en modo offline...');
       
@@ -1285,20 +1250,9 @@ export class MatrixTerminal extends LitElement {
   }
 
   render() {
-    // console.log('=== RENDER CALLED ===');
-    // console.log('showWelcome:', this.showWelcome);
-    // console.log('timeOver:', this.timeOver);
-    // console.log('terminalState.lines length:', this.terminalState.lines.length);
-    // console.log('terminalState.connected:', this.terminalState.connected);
-    // console.log('isCollectingEmail:', this.isCollectingEmail);
-    // console.log('userEmail:', this.userEmail);
-    // console.log('Lines:', this.terminalState.lines.map(line => ({ type: line.type, content: line.content.substring(0, 50) })));
-    // console.log('==================');
-
     const isTimeCritical = this.countdownTime < 0.2 * this.totalCountdownTime; // 20% of total time
 
     if (this.timeOver && !this.quizPassed && !this.quizFailed) {
-      // console.log('Rendering timeout screen');
       return html`
         <div class="terminal-container screen-flicker">
           <div class="scanlines"></div>
@@ -1451,7 +1405,6 @@ export class MatrixTerminal extends LitElement {
     }
 
     if (this.showWelcome) {
-      // console.log('Rendering welcome screen');
       return html`
         <div class="terminal-container screen-flicker">
           <div class="scanlines"></div>
@@ -1497,7 +1450,6 @@ export class MatrixTerminal extends LitElement {
       `;
     }
 
-    // console.log('Rendering main terminal interface');
     return html`
       <div class="terminal-container screen-flicker">
         <div class="scanlines"></div>
