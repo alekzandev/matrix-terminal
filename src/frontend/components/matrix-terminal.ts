@@ -860,7 +860,7 @@ export class MatrixTerminal extends LitElement {
         this.requestUpdate();
         return;
       } else if (input.toLowerCase() === 'exit') {
-        response = 'Disconnecting from Matrix Terminal...\nConnection terminated.\nThank you for using our DELFOS ANALYTICS PROFILER.';
+        response = 'Disconnecting from Matrix Terminal...\nConnection terminated.\nThank you for using our DELFOS ANALYTICS REFEREE.';
         this.terminalState = {
           ...this.terminalState,
           connected: false
@@ -1411,7 +1411,7 @@ export class MatrixTerminal extends LitElement {
           <div class="matrix-background"></div>
           
           <div class="welcome-screen">
-            <div class="welcome-logo">🔮 DELFOS ANALYTICS PROFILER</div>
+            <div class="welcome-logo">🔮 DELFOS ANALYTICS REFEREE</div>
             <div>
               ¡Bienvenid@ crack de los datos!
             </div>
@@ -1456,7 +1456,7 @@ export class MatrixTerminal extends LitElement {
         <div class="matrix-background"></div>
         
         <div class="terminal-header">
-          <div class="terminal-title">◉ DELFOS ANALYTICS PROFILER</div>
+          <div class="terminal-title">◉ DELFOS ANALYTICS REFEREE</div>
           <div class="terminal-status">
             <div class="connection-indicator ${this.terminalState.connected ? 'connected' : 'disconnected'}"></div>
             <span>${this.terminalState.connected ? 'CONNECTED' : 'DISCONNECTED'}</span>
