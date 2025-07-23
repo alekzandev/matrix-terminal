@@ -4,6 +4,7 @@ import { UserMessage, AIResponse, TerminalMessage, Question } from '../types/ter
 export interface CreateUserRequest {
   userEmail: string;
   sessionId: string;
+  timestamp?: string;
 }
 
 export interface CreateUserResponse {
@@ -122,6 +123,8 @@ export class TerminalAPI {
   // Create user session file via Go API
   async createUser(userEmail: string, sessionId: string): Promise<CreateUserResponse> {
     try {
+      const timestamp = new Date().toISOString();
+      
       const response = await fetch(`${this.goApiUrl}/user/create`, {
         method: 'POST',
         headers: {
@@ -129,7 +132,8 @@ export class TerminalAPI {
         },
         body: JSON.stringify({
           userEmail,
-          sessionId
+          sessionId,
+          timestamp
         })
       });
 

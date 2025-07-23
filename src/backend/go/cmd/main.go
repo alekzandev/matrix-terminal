@@ -75,6 +75,7 @@ type User struct {
 type CreateUserRequest struct {
 	UserEmail string `json:"userEmail"`
 	SessionID string `json:"sessionId"`
+	Timestamp string `json:"timestamp,omitempty"` // Optional frontend timestamp
 }
 
 // CreateUserResponse represents the response for user creation
@@ -339,11 +340,20 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create user object with timestamp
+	// Log frontend timestamp if provided
+	if req.Timestamp != "" {
+		log.Printf("📧 User registration - Frontend timestamp: %s", req.Timestamp)
+	}
+
+	// Create server timestamp
+	serverTimestamp := time.Now().Format(time.RFC3339)
+	log.Printf("📧 User registration - Server timestamp: %s", serverTimestamp)
+
+	// Create user object with server timestamp
 	user := User{
 		UserEmail: req.UserEmail,
 		SessionID: req.SessionID,
-		CreatedAt: time.Now().Format(time.RFC3339),
+		CreatedAt: serverTimestamp,
 	}
 
 	// Create filename: userEmail_sessionId.txt (changed from .json to .txt)
@@ -360,8 +370,14 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	// Full file path
 	filePath := filepath.Join(dataDir, filename)
 
-	// Create plain text content with email and sessionId on separate lines
-	fileContent := req.UserEmail + "\n" + req.SessionID + "\n"
+	// Create enhanced plain text content with timestamps
+	fileContent := fmt.Sprintf("UserEmail: %s\nSessionID: %s\nServerTimestamp: %s\n",
+		req.UserEmail, req.SessionID, serverTimestamp)
+
+	// Add frontend timestamp if provided
+	if req.Timestamp != "" {
+		fileContent += fmt.Sprintf("FrontendTimestamp: %s\n", req.Timestamp)
+	}
 
 	// Write file as plain text
 	if err := os.WriteFile(filePath, []byte(fileContent), 0644); err != nil {

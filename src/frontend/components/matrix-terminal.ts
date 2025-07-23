@@ -522,6 +522,9 @@ export class MatrixTerminal extends LitElement {
   private userEmail: string = '';
 
   @state()
+  private registrationTimestamp: string = '';
+
+  @state()
   private isCollectingEmail: boolean = false;
 
   @state()
@@ -1193,16 +1196,26 @@ export class MatrixTerminal extends LitElement {
 
   private async proceedAfterEmail(): Promise<void> {
     try {
+      // Store registration timestamp
+      this.registrationTimestamp = new Date().toISOString();
+      const registrationTime = new Date().toLocaleString();
+      
       this.addSystemMessage(`Correo registrado: ${this.userEmail}`);
+      this.addSystemMessage(`Fecha de registro: ${registrationTime}`);
       
       // Call the backend API to create user file using the service
-      await this.api.createUser(this.userEmail, this.sessionId);
+      const result = await this.api.createUser(this.userEmail, this.sessionId);
+      
+      // Optionally display the server-side timestamp as well
+      if (result.user?.createdAt) {
+        this.addSystemMessage(`Confirmación del servidor: ${new Date(result.user.createdAt).toLocaleString()}`);
+      }
       
       // Show the main menu after a delay
       setTimeout(() => {
         this.addPromptMessage('Elige tu perfil de investigador:');
         this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Expansión');
-      }, 1500);
+      }, 2000);
       
     } catch (error) {
       // Handle API or network errors
@@ -1213,7 +1226,7 @@ export class MatrixTerminal extends LitElement {
       setTimeout(() => {
         this.addPromptMessage('Elige tu perfil de investigador:');
         this.addPromptMessage('> [1] Créditos  [2] Servicio  [3] Expansión');
-      }, 1500);
+      }, 2000);
     }
     
     // Continue with normal terminal flow
@@ -1227,6 +1240,11 @@ export class MatrixTerminal extends LitElement {
   // Method to get the saved email (for debugging/testing)
   public getUserEmail(): string {
     return this.userEmail;
+  }
+
+  // Method to get the registration timestamp (for debugging/testing)
+  public getRegistrationTimestamp(): string {
+    return this.registrationTimestamp;
   }
 
   private formatTime(seconds: number): string {
