@@ -98,7 +98,7 @@ up-backend: setup
         echo "$(YELLOW)⚠️  Backend already running$(RESET)"; \
     else \
         cd "$(BACKEND_DIR)" && \
-        nohup go run main.go > "$(LOGS_DIR)/backend.log" 2>&1 & \
+        nohup go run main.go >> "$(LOGS_DIR)/backend.log" 2>&1 & \
         echo $$! > "$(LOGS_DIR)/backend.pid"; \
         echo "$(GREEN)✅ Backend started (PID: $$(cat $(LOGS_DIR)/backend.pid))$(RESET)"; \
     fi
@@ -110,7 +110,7 @@ up-frontend: setup
         echo "$(YELLOW)⚠️  Frontend already running$(RESET)"; \
     else \
         cd "$(FRONTEND_DIR)" && \
-        nohup npm run dev > "$(LOGS_DIR)/frontend.log" 2>&1 & \
+        nohup npm run dev >> "$(LOGS_DIR)/frontend.log" 2>&1 & \
         echo $$! > "$(LOGS_DIR)/frontend.pid"; \
         echo "$(GREEN)✅ Frontend started (PID: $$(cat $(LOGS_DIR)/frontend.pid))$(RESET)"; \
     fi
@@ -145,6 +145,7 @@ down-backend:
 	@if [ -f "$(LOGS_DIR)/backend.pid" ]; then \
         if kill -0 $$(cat "$(LOGS_DIR)/backend.pid") 2>/dev/null; then \
             kill $$(cat "$(LOGS_DIR)/backend.pid"); \
+            kill $(shell lsof -i tcp:8080 -t); \
             rm -f "$(LOGS_DIR)/backend.pid"; \
             echo "$(GREEN)✅ Backend stopped$(RESET)"; \
         else \
