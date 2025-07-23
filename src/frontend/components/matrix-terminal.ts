@@ -1162,7 +1162,7 @@ export class MatrixTerminal extends LitElement {
       // Otherwise, normal logic: 70% chance for honor, 30% chance for termo
       const random = Math.random();
       
-      if (random < 0.7) {
+      if (random < 0.4) {
         // 70% chance for honor
         this.rouletteResult = '✨ ¡Solo honor esta vez, sigue así!';
       } else {
