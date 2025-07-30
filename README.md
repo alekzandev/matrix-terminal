@@ -1,4 +1,4 @@
-# ConvAnalytics - Matrix-Style Interactive Terminal
+# Matrix-Style Interactive Terminal
 
 A stylized interface that replicates a Linux terminal with a Matrix-style aesthetic, featuring interactive command-line sessions with AI-driven dialogue and real-time WebSocket communication.
 
